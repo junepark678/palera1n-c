@@ -74,7 +74,7 @@ jobs:
       - name: Install dependencies (packages)
         run: |
             sudo apt-get -y update
-            sudo apt-get -y install autoconf automake bison build-essential llvm clang llvm-dev uuid-dev python3 python3-pip python3-dev
+            sudo apt-get -y install autoconf automake bison build-essential llvm clang llvm-dev uuid-dev python3 python3-pip python3-dev libplist libplist-dev
 
       - name: Setup environment
         run: |
@@ -106,7 +106,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: sdk
-          key: ${{ matrix.os }}-sdk
+          key: ${{ matrix.os }}-${{ matrix.gnu_triplet }}-sdk
 
       - name: get sdk
         if: steps.cache-sdk.outputs.cache-hit != 'true'
