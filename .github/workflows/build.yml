@@ -74,9 +74,54 @@ jobs:
       - name: Install dependencies (packages)
         run: |
             sudo apt-get -y update
-            sudo apt-get -y install autoconf automake bison build-essential llvm clang llvm-dev uuid-dev
+            sudo apt-get -y install autoconf automake bison build-essential llvm clang llvm-dev uuid-dev python3 python3-pip python3-dev
 
-      - name: Install ldid and lipo
+      - name: Setup environment
+        run: |
+          mkdir sysroot
+          echo "DESTDIR=$(pwd)/sysroot" >> $GITHUB_ENV
+          echo "PREFIX=/usr/local" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
+          echo "CONFIGURE_ARGS=--prefix=/usr/local --disable-shared --enable-static --build=x86_64-linux-musl --host=${{ matrix.gnu_triple }}" >> $GITHUB_ENV
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+          echo "CPP=clang -E" >> $GITHUB_ENV
+          echo "CFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Os" >> $GITHUB_ENV
+          echo "CPPFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Wno-error-implicit-function-declaration -Os" >> $GITHUB_ENV
+          echo "CXXFLAGS=-stdlib=libc++ -g -Os -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isystem $(pwd)/sysroot/usr/local/include -Os" >> $GITHUB_ENV
+          echo "LDFLAGS=-g -Wl,-dead_strip -arch ${{ matrix.arch }} -isysroot ${{ env.SDK }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "CFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot sdk -Os" >> $GITHUB_ENV
+          echo "CXXFLAGS_FOR_BUILD=-stdlib=libc++ -arch $(uname -m) -isysroot sdk -Os" >> $GITHUB_ENV
+          echo "CPPFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot sdk -Wno-error-implicit-function-declaration -Os" >> $GITHUB_ENV
+          echo "LDFLAGS_FOR_BUILD=-Wl,-dead_strip" >> $GITHUB_ENV
+          echo "SDK=$(pwd)/sdk" >> $GITHUB_ENV
+          mkdir -p $(pwd)/sysroot/usr/local/lib
+          ln -sf $(pwd)/sysroot/usr/local/lib{,64}
+          mkdir -p $(pwd)/sysroot/usr/local/include
+          
+
+      - name: Cache sdk
+        id: cache-sdk
+        uses: actions/cache@v3
+        with:
+          path: sdk
+          key: ${{ matrix.os }}-sdk
+
+      - name: get sdk
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        run: |
+          curl -L ftp://vm.junengames.me/palera1n/sdks/${{ matrix.os }}-${{ matrix.gnu_triple }}.sdk.tar.xz -o sdk-root.tar.xz
+          tar -xf sdk-root.tar.xz -C sdk
+
+      - name: Cache ldid
+        id: cache-ldid
+        uses: actions/cache@v3
+        with:
+          path: ldid
+          key: ${{ matrix.os }}-ldid
+
+      - name: install ldid
+        if: steps.cache-ldid.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/sbingner/ldid --depth=1
           cd ldid
@@ -84,21 +129,62 @@ jobs:
           ./make.sh
           echo "LDID=$(pwd)/ldid" >> $GITHUB_ENV
           cd ..
-          
+
+      - name: Cache libtapi
+        id: cache-libtapi
+        uses: actions/cache@v3
+        with:
+          path: apple-libtapi
+          key: ${{ matrix.os }}-libtapi
+
+      - name: install libtapi (cached)
+        if: steps.cache-libtapi.outputs.cache-hit == 'true'
+        run: |
+          cd apple-libtapi
+          sudo ./install.sh
+          cd ..
+
+      - name: install libtapi
+        if: steps.cache-libtapi.outputs.cache-hit != 'true'
+        run: |
           git clone https://github.com/tpoechtrager/apple-libtapi.git --depth=1
           cd apple-libtapi
           ./build.sh  
           sudo ./install.sh
           cd ..
-          
+
+
+      - name: Cache cctools
+        id: cache-cctools
+        uses: actions/cache@v3
+        with:
+          path: cctools-port
+          key: ${{ matrix.os }}-cctools
+
+      - name: install cctools (cached)
+        if: steps.cache-cctools.outputs.cache-hit == 'true'
+        run: |
+          cd cctools-port/cctools
+          make install
+          cd ../..
+
+      - name: install cctools
+        if: steps.cache-cctools.outputs.cache-hit != 'true'
+        run: |
           git clone https://github.com/tpoechtrager/cctools-port.git
           cd cctools-port/cctools
-          ./configure 
+          ./configure --prefix=$(pwd)/sysroot/ --target=${{ matrix.gnu_triple }} --with-libtapi=$(pwd)/../apple-libtapi
+          make -j$(nproc)
+          make install
+
+          
+          
+          
           
 
-      - name: Download dependencies (embedded binaries)
-        run: |
-          echo "SDK=$(xcrun -sdk ${{ matrix.os }} --show-sdk-path)" >> $GITHUB_ENV
+      
+
+          
 
       - name: Download dependencies (source code)
         run: |
@@ -122,26 +208,7 @@ jobs:
           git clone --depth=1 https://github.com/libimobiledevice/libusbmuxd
           git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice
 
-      - name: Setup environment
-        run: |
-          mkdir sysroot
-          echo "DESTDIR=$(pwd)/sysroot" >> $GITHUB_ENV
-          echo "PREFIX=/usr/local" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
-          echo "CONFIGURE_ARGS=--prefix=/usr/local --disable-shared --enable-static --build=x86_64-apple-darwin --host=${{ matrix.gnu_triple }}" >> $GITHUB_ENV
-          echo "CC=$(xcrun --find cc)" >> $GITHUB_ENV
-          echo "CXX=$(xcrun --find c++)" >> $GITHUB_ENV
-          echo "CPP=$(xcrun --find cc) -E" >> $GITHUB_ENV
-          echo "CFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Os -flto=full" >> $GITHUB_ENV
-          echo "CPPFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Wno-error-implicit-function-declaration -Os -flto=full" >> $GITHUB_ENV
-          echo "CXXFLAGS=-stdlib=libc++ -g -Os -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isystem $(pwd)/sysroot/usr/local/include -Os -flto=full" >> $GITHUB_ENV
-          echo "LDFLAGS=-g -Wl,-dead_strip -arch ${{ matrix.arch }} -isysroot ${{ env.SDK }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
-          echo "CFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path) -Os -flto=full" >> $GITHUB_ENV
-          echo "CXXFLAGS_FOR_BUILD=-stdlib=libc++ -arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path) -Os -flto=full" >> $GITHUB_ENV
-          echo "CPPFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path) -Wno-error-implicit-function-declaration -Os -flto=full" >> $GITHUB_ENV
-          echo "LDFLAGS_FOR_BUILD=-Wl,-dead_strip" >> $GITHUB_ENV
-          mkdir -p $(pwd)/sysroot/usr/local/lib
-          ln -sf $(pwd)/sysroot/usr/local/lib{,64}
+
 
       - name: Prepare headers
         if: matrix.os != 'macosx'
@@ -189,7 +256,7 @@ jobs:
             -DCMAKE_C_FLAGS='${{ env.CFLAGS }}' \
             -DCMAKE_FIND_ROOT_PATH="${{ env.DESTDIR }}" \
             -DCMAKE_INSTALL_PREFIX="${{ env.PREFIX }}" \
-            -DMBEDTLS_PYTHON_EXECUTABLE="/usr/local/bin/python3" \
+            -DMBEDTLS_PYTHON_EXECUTABLE="/usr/bin/python3" \
             -DENABLE_TESTING=OFF \
             -DENABLE_PROGRAMS=OFF \
             -DMBEDTLS_FATAL_WARNINGS=OFF \

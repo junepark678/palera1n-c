@@ -114,21 +114,21 @@ else()
             )
 endif()
 
-check_ipo_supported(RESULT result OUTPUT output)
-if(result)
-    set_property(TARGET palera1n PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-else()
-    message(WARNING "LTO is not supported: ${output}")
-endif()
-
-message("Testing for Clang/LLVM")
-
-if(CMAKE_C_COMPILER_ID MATCHES "(?i)clang|llvm")
-    message("Using clang/llvm! Enabling -flto=full! Please make sure clang is up to date, or else compile will fail")
-    add_compile_options(-flto=full)
-else()
-    message("Not using clang/llvm! Using normal lto/no lto!")
-endif()
+#check_ipo_supported(RESULT result OUTPUT output)
+#if(result)
+#    set_property(TARGET palera1n PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+#else()
+#    message(WARNING "LTO is not supported: ${output}")
+#endif()
+#
+#message("Testing for Clang/LLVM")
+#
+#if(CMAKE_C_COMPILER_ID MATCHES "(?i)clang|llvm")
+#    message("Using clang/llvm! Enabling -flto=full! Please make sure clang is up to date, or else compile will fail")
+#    add_compile_options(-flto=full)
+#else()
+#    message("Not using clang/llvm! Using normal lto/no lto!")
+#endif()
 
 
 
