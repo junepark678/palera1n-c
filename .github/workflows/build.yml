@@ -162,10 +162,12 @@ jobs:
         if: steps.cache-cctools.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/tpoechtrager/cctools-port.git
+          mkdir cctools
           cd cctools-port/cctools
           
           # Build for x86_64
           ./configure \
+          --prefix=$(pwd)/../../cctools \
           --with-libtapi=${PREFIX} \
           --target=${{ matrix.gnu_triple }}
           make -j$(nproc)
@@ -229,40 +231,41 @@ jobs:
           sudo mv -f ./ldid ${PREFIX}/bin/ldid
           sudo chmod +x ${PREFIX}/bin/ldid
           
-      - name: cache procursus
-        id: cache-procursus
-        uses: actions/cache/restore@v3
-        with:
-          path: Procursus
-          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-procursus
-
-      - name: install procursus
-        if: steps.cache-procursus.outputs.cache-hit != 'true'
-        run: |
-          export PATH=${PREFIX}/bin:${PATH}
-          export TARGET_SYSROOT=${PWD}/sdk
-          git clone https://github.com/ProcursusTeam/Procursus.git
-          cd Procursus
-          make bash-package
-
-      - name: cache save procursus
-        id: cache-procursus-save
-        uses: actions/cache/save@v3
-        with:
-          path: Procursus
-          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-procursus
-          
-      - name: install procursus (cached)
-        if: steps.cache-procursus.outputs.cache-hit == 'true'
-        run: |
-          export PATH=${PREFIX}/bin:${PATH}
-          cd Procursus
-          make bash-package
+#      - name: cache procursus
+#        id: cache-procursus
+#        uses: actions/cache/restore@v3
+#        with:
+#          path: Procursus
+#          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-procursus
+#
+#      - name: install procursus
+#        if: steps.cache-procursus.outputs.cache-hit != 'true'
+#        run: |
+#          export PATH=${PREFIX}/bin:${PATH}
+#          export TARGET_SYSROOT=${PWD}/sdk
+#          git clone https://github.com/ProcursusTeam/Procursus.git
+#          cd Procursus
+#          make bash-package
+#
+##      - name: cache save procursus
+##        id: cache-procursus-save
+##        uses: actions/cache/save@v3
+##        with:
+##          path: Procursus
+##          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-procursus
+#
+#      - name: install procursus (cached)
+#        if: steps.cache-procursus.outputs.cache-hit == 'true'
+#        run: |
+#          export PATH=${PREFIX}/bin:${PATH}
+#          cd Procursus
+#          make bash-package
 
       - name: Setup environment
         run: |
           mkdir -p sysroot
           mkdir -p sdk
+          echo "PATH=$(pwd)/cctools/bin:$(pwd)/ldid:${{ env.PATH }}" >> $GITHUB_ENV
           echo "DESTDIR=$(pwd)/sysroot" >> $GITHUB_ENV
           echo "PREFIX=/usr/local" >> $GITHUB_ENV
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
