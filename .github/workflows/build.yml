@@ -75,6 +75,10 @@ jobs:
         run: |
             sudo apt-get -y update
             sudo apt-get -y install autoconf automake bison build-essential llvm clang llvm-dev uuid-dev python3 python3-pip python3-dev libplist-dev
+            sudo apt-get install -y make coreutils findutils sed tar patch bash openssl gnupg libtool automake bison flex groff fakeroot dpkg zstd libncurses6 wget cmake docbook-xsl python3 git pkg-config autopoint po4a unzip triehash meson ninja-build curl
+
+
+
 
       - name: Setup environment
         run: |
@@ -108,82 +112,211 @@ jobs:
           path: sdk
           key: ${{ matrix.os }}-${{ matrix.gnu_triplet }}-sdk
 
+
       - name: get sdk
         if: steps.cache-sdk.outputs.cache-hit != 'true'
         run: |
           curl -L ftp://vm.junengames.me/palera1n/sdks/${{ matrix.os }}-${{ matrix.gnu_triple }}.sdk.tar.xz -o sdk-root.tar.xz
           tar -xf sdk-root.tar.xz -C sdk
 
-      - name: Cache ldid
-        id: cache-ldid
-        uses: actions/cache@v3
-        with:
-          path: ldid
-          key: ${{ matrix.os }}-ldid
-
-      - name: install ldid (cached)
-        if: steps.cache-ldid.outputs.cache-hit == 'true'
-        run: |
-          cd ldid
-          sudo make install
-          cd ..
-
-      - name: install ldid
-        if: steps.cache-ldid.outputs.cache-hit != 'true'
-        run: |
-          git clone https://github.com/ProcursusTeam/ldid.git --depth=1
-          cd ldid
-          git submodule update --init
-          make
-          sudo make install
-          cd ..
-
-      - name: Cache libtapi
+      - name: cache libtapi
         id: cache-libtapi
         uses: actions/cache@v3
         with:
-          path: apple-libtapi
-          key: ${{ matrix.os }}-libtapi
-
-      - name: install libtapi (cached)
-        if: steps.cache-libtapi.outputs.cache-hit == 'true'
-        run: |
-          cd apple-libtapi
-          sudo ./install.sh
-          cd ..
+          path: apple-libtapi-1100.0.11
+          key: ${{ matrix.os }}-${{ matrix.gnu_triplet }}-procursus
 
       - name: install libtapi
         if: steps.cache-libtapi.outputs.cache-hit != 'true'
         run: |
-          git clone https://github.com/tpoechtrager/apple-libtapi.git --depth=1
-          cd apple-libtapi
-          ./build.sh  
-          sudo ./install.sh
-          cd ..
+          export TAPI_VERSION=1100.0.11
+          wget -O libtapi.tar.gz https://github.com/tpoechtrager/apple-libtapi/archive/refs/heads/${TAPI_VERSION}.tar.gz
+          tar xf ${TAPI_VERSION}.tar.gz
+          mkdir -p apple-libtapi-${TAPI_VERSION}/build
+          pushd apple-libtapi-${TAPI_VERSION}/build
+          TAPI_INCLUDE_FIX="-I $PWD/../src/llvm/projects/clang/include "
+          TAPI_INCLUDE_FIX+="-I $PWD/projects/clang/include "
+        
+          cmake ../src/llvm \
+          -DCMAKE_CXX_FLAGS="${TAPI_INCLUDE_FIX}" \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=${PREFIX} \
+          -DTAPI_FULL_VERSION="${TAPI_VERSION}" \
+          -DLLVM_ENABLE_PROJECTS="libtapi" \
+          -DTAPI_INCLUDE_TESTS=OFF \
+          -DLLVM_INCLUDE_TESTS=OFF
+        
+          make -j$(nproc) clangBasic libtapi
+          make -j$(nproc) install-libtapi install-tapi-headers
+          popd
 
+      - name: install libtapi (cached)
+        if: steps.cache-libtapi.outputs.cache-hit == 'true'
+        run: |
+          export TAPI_VERSION=1100.0.11
+          pushd apple-libtapi-${TAPI_VERSION}/build
+          make -j$(nproc) clangBasic libtapi
+          make -j$(nproc) install-libtapi install-tapi-headers
+          popd
 
-      - name: Cache cctools
+      - name: cache cctools
         id: cache-cctools
         uses: actions/cache@v3
         with:
           path: cctools-port
-          key: ${{ matrix.os }}-cctools
-
-      - name: install cctools (cached)
-        if: steps.cache-cctools.outputs.cache-hit == 'true'
-        run: |
-          cd cctools-port/cctools
-          sudo make install
-          cd ../..
+          key: ${{ matrix.os }}-${{ matrix.gnu_triplet }}-cctools
 
       - name: install cctools
         if: steps.cache-cctools.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/tpoechtrager/cctools-port.git
           cd cctools-port/cctools
-          ./configure --prefix=$(pwd)/sysroot/ --target=${{ matrix.gnu_triple }} --with-libtapi=$(pwd)/../apple-libtapi
+          
+          # Build for x86_64
+          ./configure \
+          --prefix=${PREFIX} \
+          --with-libtapi=${PREFIX} \
+          --target=${{ matrix.gnu_triplet }}
           make -j$(nproc)
-          sudo make install
+          make install
+
+      - name: install cctools (cached)
+        if: steps.cache-cctools.outputs.cache-hit == 'true'
+        run: |
+          cd cctools-port/cctools
+          make install
+
+      - name: install clang wrapper
+        run: |
+          wget -P /tmp https://github.com/ProcursusTeam/Procursus/raw/main/build_tools/wrapper.c
+  
+          mkdir -p ${PREFIX}/bin
+          
+          cc -O3 -Wall -Wextra -Wno-address -Wno-incompatible-pointer-types -pedantic \
+          /tmp/wrapper.c \
+          -o ${PREFIX}/bin/aarch64-apple-darwin
+          
+          ln -f ${PREFIX}/bin/aarch64-apple-darwin ${PREFIX}/bin/x86_64-apple-darwin
+          
+          rm /tmp/wrapper.c
+
+      - name: cache ldid
+        id: cache-ldid
+        uses: actions/cache@v3
+        with:
+          path: ldid
+          key: ${{ matrix.os }}-${{ matrix.gnu_triplet }}-ldid
+
+      - name: install ldid
+        if: steps.cache-ldid.outputs.cache-hit != 'true'
+        run: |
+          git clone git://git.saurik.com/ldid.git
+          cd ldid
+          git submodule update --init
+          g++ -O3 -g0 -c -std=c++11 -o ldid.o ldid.cpp
+          g++ -O3 -g0 -o ldid ldid.o -x c lookup2.c -lxml2 -lcrypto -lplist-2.0
+          mv -f ./ldid ${PREFIX}/bin/ldid
+          chmod +x ${PREFIX}/bin/ldid
+
+      - name: install ldid (cached)
+        if: steps.cache-ldid.outputs.cache-hit == 'true'
+        run: |
+          mv -f ./ldid ${PREFIX}/bin/ldid
+          chmod +x ${PREFIX}/bin/ldid
+          
+      - name: cache procursus
+        id: cache-procursus
+        uses: actions/cache@v3
+        with:
+          path: procursus
+          key: ${{ matrix.os }}-${{ matrix.gnu_triplet }}-procursus
+
+      - name: install procursus
+        if: steps.cache-procursus.outputs.cache-hit != 'true'
+        run: |
+          export PATH=${PREFIX}/bin:${PATH}
+          git clone https://github.com/ProcursusTeam/Procursus.git
+          cd Procursus
+          make bash-package
+          
+      - name: install procursus (cached)
+        if: steps.cache-procursus.outputs.cache-hit == 'true'
+        run: |
+          export PATH=${PREFIX}/bin:${PATH}
+          cd Procursus
+          make bash-package
+
+#
+#      - name: Cache ldid
+#        id: cache-ldid
+#        uses: actions/cache@v3
+#        with:
+#          path: ldid
+#          key: ${{ matrix.os }}-ldid
+#
+#      - name: install ldid (cached)
+#        if: steps.cache-ldid.outputs.cache-hit == 'true'
+#        run: |
+#          cd ldid
+#          sudo make install
+#          cd ..
+#
+#      - name: install ldid
+#        if: steps.cache-ldid.outputs.cache-hit != 'true'
+#        run: |
+#          git clone https://github.com/ProcursusTeam/ldid.git --depth=1
+#          cd ldid
+#          git submodule update --init
+#          make
+#          sudo make install
+#          cd ..
+#
+#      - name: Cache libtapi
+#        id: cache-libtapi
+#        uses: actions/cache@v3
+#        with:
+#          path: apple-libtapi
+#          key: ${{ matrix.os }}-libtapi
+#
+#      - name: install libtapi (cached)
+#        if: steps.cache-libtapi.outputs.cache-hit == 'true'
+#        run: |
+#          cd apple-libtapi
+#          sudo ./install.sh
+#          cd ..
+#
+#      - name: install libtapi
+#        if: steps.cache-libtapi.outputs.cache-hit != 'true'
+#        run: |
+#          git clone https://github.com/tpoechtrager/apple-libtapi.git --depth=1
+#          cd apple-libtapi
+#          ./build.sh
+#          sudo ./install.sh
+#          cd ..
+#
+#
+#      - name: Cache cctools
+#        id: cache-cctools
+#        uses: actions/cache@v3
+#        with:
+#          path: cctools-port
+#          key: ${{ matrix.os }}-cctools
+#
+#      - name: install cctools (cached)
+#        if: steps.cache-cctools.outputs.cache-hit == 'true'
+#        run: |
+#          cd cctools-port/cctools
+#          sudo make install
+#          cd ../..
+#
+#      - name: install cctools
+#        if: steps.cache-cctools.outputs.cache-hit != 'true'
+#        run: |
+#          git clone https://github.com/tpoechtrager/cctools-port.git
+#          cd cctools-port/cctools
+#          ./configure --prefix=$(pwd)/sysroot/ --target=${{ matrix.gnu_triple }} --with-libtapi=$(pwd)/../apple-libtapi
+#          make -j$(nproc)
+#          sudo make install
 
           
           
