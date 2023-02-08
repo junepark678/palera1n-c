@@ -130,7 +130,7 @@ jobs:
           -DLLVM_INCLUDE_TESTS=OFF
         
           make -j$(nproc) clangBasic libtapi
-          make -j$(nproc) install-libtapi install-tapi-headers
+          sudo make -j$(nproc) install-libtapi install-tapi-headers
           popd
 
       - name: install libtapi (cached)
@@ -139,7 +139,7 @@ jobs:
           export TAPI_VERSION=1100.0.11
           pushd apple-libtapi-${TAPI_VERSION}/build
           make -j$(nproc) clangBasic libtapi
-          make -j$(nproc) install-libtapi install-tapi-headers
+          sudo make -j$(nproc) install-libtapi install-tapi-headers
           popd
 
       - name: cache cctools
@@ -161,25 +161,25 @@ jobs:
           --with-libtapi=${PREFIX} \
           --target=${{ matrix.gnu_triplet }}
           make -j$(nproc)
-          make install
+          sudo make install
 
       - name: install cctools (cached)
         if: steps.cache-cctools.outputs.cache-hit == 'true'
         run: |
           cd cctools-port/cctools
-          make install
+          sudo make install
 
       - name: install clang wrapper
         run: |
           wget -P /tmp https://github.com/ProcursusTeam/Procursus/raw/main/build_tools/wrapper.c
   
-          mkdir -p ${PREFIX}/bin
+          sudo mkdir -p ${PREFIX}/bin
           
-          cc -O3 -Wall -Wextra -Wno-address -Wno-incompatible-pointer-types -pedantic \
+          sudo cc -O3 -Wall -Wextra -Wno-address -Wno-incompatible-pointer-types -pedantic \
           /tmp/wrapper.c \
           -o ${PREFIX}/bin/aarch64-apple-darwin
           
-          ln -f ${PREFIX}/bin/aarch64-apple-darwin ${PREFIX}/bin/x86_64-apple-darwin
+          sudo ln -f ${PREFIX}/bin/aarch64-apple-darwin ${PREFIX}/bin/x86_64-apple-darwin
           
           rm /tmp/wrapper.c
 
@@ -198,14 +198,14 @@ jobs:
           git submodule update --init
           g++ -O3 -g0 -c -std=c++11 -o ldid.o ldid.cpp
           g++ -O3 -g0 -o ldid ldid.o -x c lookup2.c -lxml2 -lcrypto -lplist-2.0
-          mv -f ./ldid ${PREFIX}/bin/ldid
-          chmod +x ${PREFIX}/bin/ldid
+          sudo mv -f ./ldid ${PREFIX}/bin/ldid
+          sudo chmod +x ${PREFIX}/bin/ldid
 
       - name: install ldid (cached)
         if: steps.cache-ldid.outputs.cache-hit == 'true'
         run: |
-          mv -f ./ldid ${PREFIX}/bin/ldid
-          chmod +x ${PREFIX}/bin/ldid
+          sudo mv -f ./ldid ${PREFIX}/bin/ldid
+          sudo chmod +x ${PREFIX}/bin/ldid
           
       - name: cache procursus
         id: cache-procursus
@@ -220,14 +220,14 @@ jobs:
           export PATH=${PREFIX}/bin:${PATH}
           git clone https://github.com/ProcursusTeam/Procursus.git
           cd Procursus
-          make bash-package
+          sudo make bash-package
           
       - name: install procursus (cached)
         if: steps.cache-procursus.outputs.cache-hit == 'true'
         run: |
           export PATH=${PREFIX}/bin:${PATH}
           cd Procursus
-          make bash-package
+          sudo make bash-package
 
       - name: Setup environment
         run: |
