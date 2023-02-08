@@ -86,7 +86,7 @@ jobs:
           mkdir -p $(pwd)/sysroot/usr/local/include
           mkdir -p sysroot
           mkdir -p sdk
-          echo "$(pwd)/sysroot" > $GITHUB_ENV
+          echo "PREFIX=$(pwd)/sysroot" > $GITHUB_ENV
           
 
       - name: Cache sdk
