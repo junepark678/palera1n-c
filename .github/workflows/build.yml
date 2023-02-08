@@ -81,7 +81,7 @@ jobs:
           clang-format-15 python3-clang-15 clangd-15 clang-tidy-15 lld-15 libc++-15-dev libc++abi-15-dev autoconf \
           automake bison build-essential uuid-dev python3 python3-pip python3-dev libplist-dev curl make coreutils \
           findutils sed tar patch bash openssl gnupg libtool automake bison flex groff fakeroot dpkg zstd libncurses6 \
-          wget cmake docbook-xsl python3 git pkg-config autopoint po4a unzip triehash meson ninja-build curl gsed
+          wget cmake docbook-xsl python3 git pkg-config autopoint po4a unzip triehash meson ninja-build curl sed
 
 
 
@@ -428,15 +428,15 @@ jobs:
           cp -af ${TARGET_SYSROOT}/usr/include/mach/machine/thread_state.h sysroot/usr/local/include/mach/machine
           cp -af ${TARGET_SYSROOT}/usr/include/mach/arm sysroot/usr/local/include/mach
           cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/IOKit.framework/Headers/* sysroot/usr/local/include/IOKit
-          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/stdlib.h > sysroot/usr/local/include/stdlib.h
-          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/time.h > sysroot/usr/local/include/time.h
-          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/unistd.h > sysroot/usr/local/include/unistd.h
-          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/mach/task.h > sysroot/usr/local/include/mach/task.h
-          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/mach/mach_host.h > sysroot/usr/local/include/mach/mach_host.h
-          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/ucontext.h > sysroot/usr/local/include/ucontext.h
-          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/signal.h > sysroot/usr/local/include/signal.h
-          gsed -E /'__API_UNAVAILABLE'/d < ${TARGET_SYSROOT}/usr/include/pthread.h > sysroot/usr/local/include/pthread.h
-          gsed -i -E s/'__API_UNAVAILABLE\(.*\)'// sysroot/usr/local/include/IOKit/IOKitLib.h
+          sed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/stdlib.h > sysroot/usr/local/include/stdlib.h
+          sed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/time.h > sysroot/usr/local/include/time.h
+          sed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/unistd.h > sysroot/usr/local/include/unistd.h
+          sed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/mach/task.h > sysroot/usr/local/include/mach/task.h
+          sed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/mach/mach_host.h > sysroot/usr/local/include/mach/mach_host.h
+          sed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/ucontext.h > sysroot/usr/local/include/ucontext.h
+          sed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/signal.h > sysroot/usr/local/include/signal.h
+          sed -E /'__API_UNAVAILABLE'/d < ${TARGET_SYSROOT}/usr/include/pthread.h > sysroot/usr/local/include/pthread.h
+          sed -i -E s/'__API_UNAVAILABLE\(.*\)'// sysroot/usr/local/include/IOKit/IOKitLib.h
 
       - name: Build Mbed TLS
         run: |
