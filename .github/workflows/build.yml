@@ -79,30 +79,13 @@ jobs:
 
 
 
-
-      - name: Setup environment
+      - name: create directories
         run: |
-          mkdir sysroot
-          mkdir sdk
-          echo "DESTDIR=$(pwd)/sysroot" >> $GITHUB_ENV
-          echo "PREFIX=/usr/local" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
-          echo "CONFIGURE_ARGS=--prefix=/usr/local --disable-shared --enable-static --build=x86_64-linux-musl --host=${{ matrix.gnu_triple }}" >> $GITHUB_ENV
-          echo "CC=clang" >> $GITHUB_ENV
-          echo "CXX=clang++" >> $GITHUB_ENV
-          echo "CPP=clang -E" >> $GITHUB_ENV
-          echo "CFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Os" >> $GITHUB_ENV
-          echo "CPPFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Wno-error-implicit-function-declaration -Os" >> $GITHUB_ENV
-          echo "CXXFLAGS=-stdlib=libc++ -g -Os -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isystem $(pwd)/sysroot/usr/local/include -Os" >> $GITHUB_ENV
-          echo "LDFLAGS=-g -Wl,-dead_strip -arch ${{ matrix.arch }} -isysroot ${{ env.SDK }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
-          echo "CFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot sdk -Os" >> $GITHUB_ENV
-          echo "CXXFLAGS_FOR_BUILD=-stdlib=libc++ -arch $(uname -m) -isysroot sdk -Os" >> $GITHUB_ENV
-          echo "CPPFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot sdk -Wno-error-implicit-function-declaration -Os" >> $GITHUB_ENV
-          echo "LDFLAGS_FOR_BUILD=-Wl,-dead_strip" >> $GITHUB_ENV
-          echo "SDK=$(pwd)/sdk" >> $GITHUB_ENV
           mkdir -p $(pwd)/sysroot/usr/local/lib
           ln -sf $(pwd)/sysroot/usr/local/lib{,64}
           mkdir -p $(pwd)/sysroot/usr/local/include
+          mkdir -p sysroot
+          mkdir -p sdk
           
 
       - name: Cache sdk
@@ -245,6 +228,30 @@ jobs:
           export PATH=${PREFIX}/bin:${PATH}
           cd Procursus
           make bash-package
+
+      - name: Setup environment
+        run: |
+          mkdir -p sysroot
+          mkdir -p sdk
+          echo "DESTDIR=$(pwd)/sysroot" >> $GITHUB_ENV
+          echo "PREFIX=/usr/local" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
+          echo "CONFIGURE_ARGS=--prefix=/usr/local --disable-shared --enable-static --build=x86_64-linux-musl --host=${{ matrix.gnu_triple }}" >> $GITHUB_ENV
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+          echo "CPP=clang -E" >> $GITHUB_ENV
+          echo "CFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Os" >> $GITHUB_ENV
+          echo "CPPFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Wno-error-implicit-function-declaration -Os" >> $GITHUB_ENV
+          echo "CXXFLAGS=-stdlib=libc++ -g -Os -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isystem $(pwd)/sysroot/usr/local/include -Os" >> $GITHUB_ENV
+          echo "LDFLAGS=-g -Wl,-dead_strip -arch ${{ matrix.arch }} -isysroot ${{ env.SDK }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "CFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot sdk -Os" >> $GITHUB_ENV
+          echo "CXXFLAGS_FOR_BUILD=-stdlib=libc++ -arch $(uname -m) -isysroot sdk -Os" >> $GITHUB_ENV
+          echo "CPPFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot sdk -Wno-error-implicit-function-declaration -Os" >> $GITHUB_ENV
+          echo "LDFLAGS_FOR_BUILD=-Wl,-dead_strip" >> $GITHUB_ENV
+          echo "SDK=$(pwd)/sdk" >> $GITHUB_ENV
+          mkdir -p $(pwd)/sysroot/usr/local/lib
+          ln -sf $(pwd)/sysroot/usr/local/lib{,64}
+          mkdir -p $(pwd)/sysroot/usr/local/include
 
 #
 #      - name: Cache ldid
