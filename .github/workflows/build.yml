@@ -75,7 +75,7 @@ jobs:
         run: |
             sudo apt-get -y update
             sudo apt-get -y install autoconf automake bison build-essential llvm clang llvm-dev uuid-dev python3 python3-pip python3-dev libplist-dev
-            sudo apt-get install -y make coreutils findutils sed tar patch bash openssl gnupg libtool automake bison flex groff fakeroot dpkg zstd libncurses6 wget cmake docbook-xsl python3 git pkg-config autopoint po4a unzip triehash meson ninja-build curl
+            sudo apt-get install -y curl make coreutils findutils sed tar patch bash openssl gnupg libtool automake bison flex groff fakeroot dpkg zstd libncurses6 wget cmake docbook-xsl python3 git pkg-config autopoint po4a unzip triehash meson ninja-build curl
 
 
 
@@ -265,7 +265,7 @@ jobs:
         run: |
           mkdir -p sysroot
           mkdir -p sdk
-          echo "PATH=$(pwd)/cctools/bin:$(pwd)/ldid:${{ env.PATH }}" >> $GITHUB_ENV
+          echo "PATH=$(pwd)/cctools/bin:$(pwd)/ldid:$PATH" >> $GITHUB_ENV
           echo "DESTDIR=$(pwd)/sysroot" >> $GITHUB_ENV
           echo "PREFIX=/usr/local" >> $GITHUB_ENV
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
