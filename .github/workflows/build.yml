@@ -107,6 +107,10 @@ jobs:
           
           curl -L ftp://vm.junengames.me/palera1n/sdks/macosx-x86_64-apple-darwin.sdk.tar.xz -o sdk-root.tar.xz
           tar -xf sdk-root.tar.xz -C macsdk
+          rm sdk-root.tar.xz
+          
+          echo "SDK=$(pwd)/sdk" >> $GITHUB_ENV
+          echo "MACSDK=$(pwd)/macsdk" >> $GITHUB_ENV
           
 
       - name: cache libtapi
@@ -287,8 +291,6 @@ jobs:
           echo "CXXFLAGS_FOR_BUILD=-stdlib=libc++ -arch $(uname -m) -isysroot sdk -Os" >> $GITHUB_ENV
           echo "CPPFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot sdk -Wno-error-implicit-function-declaration -Os" >> $GITHUB_ENV
           echo "LDFLAGS_FOR_BUILD=-Wl" >> $GITHUB_ENV
-          echo "SDK=$(pwd)/sdk" >> $GITHUB_ENV
-          echo "MACSDK=$(pwd)/macsdk" >> $GITHUB_ENV
           mkdir -p $(pwd)/sysroot/usr/local/lib
           ln -sf $(pwd)/sysroot/usr/local/lib{,64}
           mkdir -p $(pwd)/sysroot/usr/local/include
