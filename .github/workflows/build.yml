@@ -86,6 +86,7 @@ jobs:
           mkdir -p $(pwd)/sysroot/usr/local/include
           mkdir -p sysroot
           mkdir -p sdk
+          echo "$(pwd)/sysroot" > $GITHUB_ENV
           
 
       - name: Cache sdk
@@ -156,10 +157,10 @@ jobs:
           cd cctools-port/cctools
           
           # Build for x86_64
-          sudo ./configure \
+          ./configure \
           --with-libtapi=${PREFIX} \
           --target=${{ matrix.gnu_triple }}
-          sudo make -j$(nproc)
+          make -j$(nproc)
           sudo make install
 
       - name: install cctools (cached)
@@ -227,7 +228,7 @@ jobs:
         run: |
           export PATH=${PREFIX}/bin:${PATH}
           cd Procursus
-          sudo make bash-package
+          make bash-package
 
       - name: Setup environment
         run: |
