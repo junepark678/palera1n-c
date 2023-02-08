@@ -136,7 +136,6 @@ jobs:
           popd
 
       - name: cache save libtapi
-        if: libtapi.outcome == 'success'
         id: cache-libtapi-save
         uses: actions/cache/save@v3
         with:
