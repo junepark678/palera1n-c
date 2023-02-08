@@ -77,7 +77,7 @@ jobs:
           echo "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main \ndeb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main" | sudo tee /etc/apt/sources.list.d/llvm.list
           sudo apt-get -y update
           sudo apt-get install libllvm-15-ocaml-dev libllvm15 llvm-15 llvm-15-dev llvm-15-doc llvm-15-examples llvm-15-runtime
-          sudo apt-get install clang-15 clang-tools-15 clang-15-doc libclang-common-15-dev libclang-15-dev libclang1-15 clang-format-15 python3-clang-15 clangd-15 clang-tidy-15\
+          sudo apt-get install clang-15 clang-tools-15 clang-15-doc libclang-common-15-dev libclang-15-dev libclang1-15 clang-format-15 python3-clang-15 clangd-15 clang-tidy-15
           sudo apt-get install lld-15
           sudo apt-get install libc++-15-dev libc++abi-15-dev
           sudo apt-get -y install autoconf automake bison build-essential uuid-dev python3 python3-pip python3-dev libplist-dev
