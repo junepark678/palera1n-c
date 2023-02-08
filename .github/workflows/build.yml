@@ -121,14 +121,21 @@ jobs:
           path: ldid
           key: ${{ matrix.os }}-ldid
 
+      - name: install ldid (cached)
+        if: steps.cache-ldid.outputs.cache-hit == 'true'
+        run: |
+          cd ldid
+          sudo make install
+          cd ..
+
       - name: install ldid
         if: steps.cache-ldid.outputs.cache-hit != 'true'
         run: |
-          git clone https://github.com/sbingner/ldid --depth=1
+          git clone https://github.com/ProcursusTeam/ldid.git --depth=1
           cd ldid
           git submodule update --init
-          ./make.sh
-          echo "LDID=$(pwd)/ldid" >> $GITHUB_ENV
+          make
+          sudo make install
           cd ..
 
       - name: Cache libtapi
@@ -166,7 +173,7 @@ jobs:
         if: steps.cache-cctools.outputs.cache-hit == 'true'
         run: |
           cd cctools-port/cctools
-          make install
+          sudo make install
           cd ../..
 
       - name: install cctools
@@ -176,7 +183,7 @@ jobs:
           cd cctools-port/cctools
           ./configure --prefix=$(pwd)/sysroot/ --target=${{ matrix.gnu_triple }} --with-libtapi=$(pwd)/../apple-libtapi
           make -j$(nproc)
-          make install
+          sudo make install
 
           
           
