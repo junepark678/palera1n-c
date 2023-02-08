@@ -286,7 +286,7 @@ jobs:
           echo "CFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot sdk -Os" >> $GITHUB_ENV
           echo "CXXFLAGS_FOR_BUILD=-stdlib=libc++ -arch $(uname -m) -isysroot sdk -Os" >> $GITHUB_ENV
           echo "CPPFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot sdk -Wno-error-implicit-function-declaration -Os" >> $GITHUB_ENV
-          echo "LDFLAGS_FOR_BUILD=-Wl,-dead_strip" >> $GITHUB_ENV
+          echo "LDFLAGS_FOR_BUILD=-Wl" >> $GITHUB_ENV
           echo "SDK=$(pwd)/sdk" >> $GITHUB_ENV
           echo "MACSDK=$(pwd)/macsdk" >> $GITHUB_ENV
           mkdir -p $(pwd)/sysroot/usr/local/lib
