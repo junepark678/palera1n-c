@@ -286,9 +286,9 @@ jobs:
           echo "PREFIX=/usr/local" >> $GITHUB_ENV
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
           echo "CONFIGURE_ARGS=--prefix=/usr/local --disable-shared --enable-static --build=x86_64-linux-musl --host=${{ matrix.gnu_triple }}" >> $GITHUB_ENV
-          echo "CC=clang" >> $GITHUB_ENV
-          echo "CXX=clang++" >> $GITHUB_ENV
-          echo "CPP=clang -E" >> $GITHUB_ENV
+          echo "CC=${{ matrix.triple }}-clang" >> $GITHUB_ENV
+          echo "CXX=${{ matrix.triple }}-clang++" >> $GITHUB_ENV
+          echo "CPP=${{ matrix.triple }}-clang -E" >> $GITHUB_ENV
           echo "CFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Os" >> $GITHUB_ENV
           echo "CPPFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Wno-error-implicit-function-declaration -Os" >> $GITHUB_ENV
           echo "CXXFLAGS=-stdlib=libc++ -g -Os -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isystem $(pwd)/sysroot/usr/local/include -Os" >> $GITHUB_ENV
