@@ -93,7 +93,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: sdk
-          key: ${{ matrix.os }}-${{ matrix.gnu_triplet }}-sdk
+          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-sdk
 
 
       - name: get sdk
@@ -107,7 +107,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: apple-libtapi-1100.0.11
-          key: ${{ matrix.os }}-${{ matrix.gnu_triplet }}-procursus
+          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-procursus
 
       - name: install libtapi
         if: steps.cache-libtapi.outputs.cache-hit != 'true'
@@ -147,7 +147,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: cctools-port
-          key: ${{ matrix.os }}-${{ matrix.gnu_triplet }}-cctools
+          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-cctools
 
       - name: install cctools
         if: steps.cache-cctools.outputs.cache-hit != 'true'
@@ -159,7 +159,7 @@ jobs:
           ./configure \
           --prefix=${PREFIX} \
           --with-libtapi=${PREFIX} \
-          --target=${{ matrix.gnu_triplet }}
+          --target=${{ matrix.gnu_triple }}
           make -j$(nproc)
           sudo make install
 
@@ -188,7 +188,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ldid
-          key: ${{ matrix.os }}-${{ matrix.gnu_triplet }}-ldid
+          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-ldid
 
       - name: install ldid
         if: steps.cache-ldid.outputs.cache-hit != 'true'
@@ -212,7 +212,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: procursus
-          key: ${{ matrix.os }}-${{ matrix.gnu_triplet }}-procursus
+          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-procursus
 
       - name: install procursus
         if: steps.cache-procursus.outputs.cache-hit != 'true'
