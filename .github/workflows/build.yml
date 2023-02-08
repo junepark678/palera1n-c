@@ -86,6 +86,7 @@ jobs:
           mkdir -p $(pwd)/sysroot/usr/local/include
           mkdir -p sysroot
           mkdir -p sdk
+          mkdir -p macsdk
           echo "PREFIX=$(pwd)/sysroot" > $GITHUB_ENV
           
 
@@ -105,6 +106,7 @@ jobs:
           rm sdk-root.tar.xz
           
           curl -L ftp://vm.junengames.me/palera1n/sdks/macosx-x86_64-apple-darwin.sdk.tar.xz -o sdk-root.tar.xz
+          tar -xf sdk-root.tar.xz -C macsdk
           
 
       - name: cache libtapi
@@ -399,7 +401,7 @@ jobs:
         if: matrix.os != 'macosx'
         run: |
           mkdir -p sysroot/{{,System}/Library/Frameworks,/usr/{local/include/{bsm,objc,os/internal,sys,firehose,CoreFoundation,FSEvents,IOKit/kext,libkern,kern,arm,{mach/,}machine,CommonCrypto,Security,CoreSymbolication,Kernel/{kern,IOKit,libkern},rpc,rpcsvc,xpc/private,ktrace,mach-o,dispatch},lib/pkgconfig,/local/lib}}
-          MACOSX_SYSROOT=
+          MACOSX_SYSROOT=macsdk
           TARGET_SYSROOT=sdk
           cp -af ${MACOSX_SYSROOT}/usr/include/{arpa,bsm,hfs,net,xpc,netinet,servers,timeconv.h,launch.h} sysroot/usr/local/include
           cp -af ${MACOSX_SYSROOT}/usr/include/objc/objc-runtime.h sysroot/usr/local/include/objc
