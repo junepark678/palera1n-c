@@ -131,7 +131,7 @@ jobs:
         run: |
           export TAPI_VERSION=1100.0.11
           wget -O libtapi.tar.gz https://github.com/tpoechtrager/apple-libtapi/archive/refs/heads/${TAPI_VERSION}.tar.gz
-          tar xf ${TAPI_VERSION}.tar.gz
+          tar xf libtapi.tar.gz
           mkdir -p apple-libtapi-${TAPI_VERSION}/build
           pushd apple-libtapi-${TAPI_VERSION}/build
           TAPI_INCLUDE_FIX="-I $PWD/../src/llvm/projects/clang/include "
