@@ -105,12 +105,13 @@ jobs:
 
       - name: cache libtapi
         id: cache-libtapi
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         with:
           path: apple-libtapi-1100.0.11
-          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-procursus
+          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-libtapi
 
       - name: install libtapi
+        id: libtapi
         if: steps.cache-libtapi.outputs.cache-hit != 'true'
         run: |
           export TAPI_VERSION=1100.0.11
@@ -134,6 +135,14 @@ jobs:
           sudo make -j$(nproc) install-libtapi install-tapi-headers
           popd
 
+      - name: cache save libtapi
+        if: libtapi.outcome == 'success'
+        id: cache-libtapi-save
+        uses: actions/cache/save@v3
+        with:
+          path: apple-libtapi-1100.0.11
+          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-libtapi
+
       - name: install libtapi (cached)
         if: steps.cache-libtapi.outputs.cache-hit == 'true'
         run: |
@@ -145,7 +154,7 @@ jobs:
 
       - name: cache cctools
         id: cache-cctools
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         with:
           path: cctools-port
           key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-cctools
@@ -162,6 +171,13 @@ jobs:
           --target=${{ matrix.gnu_triple }}
           make -j$(nproc)
           sudo make install
+
+      - name: cache save cctools
+        id: cache-cctools-save
+        uses: actions/cache/save@v3
+        with:
+          path: cctools-port
+          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-cctools
 
       - name: install cctools (cached)
         if: steps.cache-cctools.outputs.cache-hit == 'true'
@@ -185,7 +201,7 @@ jobs:
 
       - name: cache ldid
         id: cache-ldid
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         with:
           path: ldid
           key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-ldid
@@ -201,6 +217,13 @@ jobs:
           sudo mv -f ./ldid ${PREFIX}/bin/ldid
           sudo chmod +x ${PREFIX}/bin/ldid
 
+      - name: cache save ldid
+        id: cache-ldid-save
+        uses: actions/cache/save@v3
+        with:
+          path: ldid
+          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-ldid
+
       - name: install ldid (cached)
         if: steps.cache-ldid.outputs.cache-hit == 'true'
         run: |
@@ -209,7 +232,7 @@ jobs:
           
       - name: cache procursus
         id: cache-procursus
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         with:
           path: Procursus
           key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-procursus
@@ -221,7 +244,14 @@ jobs:
           export TARGET_SYSROOT=${PWD}/sdk
           git clone https://github.com/ProcursusTeam/Procursus.git
           cd Procursus
-          sudo make bash-package
+          make bash-package
+
+      - name: cache save procursus
+        id: cache-procursus-save
+        uses: actions/cache/save@v3
+        with:
+          path: Procursus
+          key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-procursus
           
       - name: install procursus (cached)
         if: steps.cache-procursus.outputs.cache-hit == 'true'
