@@ -156,11 +156,10 @@ jobs:
           cd cctools-port/cctools
           
           # Build for x86_64
-          ./configure \
-          --prefix=${PREFIX} \
+          sudo ./configure \
           --with-libtapi=${PREFIX} \
           --target=${{ matrix.gnu_triple }}
-          make -j$(nproc)
+          sudo make -j$(nproc)
           sudo make install
 
       - name: install cctools (cached)
@@ -211,7 +210,7 @@ jobs:
         id: cache-procursus
         uses: actions/cache@v3
         with:
-          path: procursus
+          path: Procursus
           key: ${{ matrix.os }}-${{ matrix.gnu_triple }}-procursus
 
       - name: install procursus
