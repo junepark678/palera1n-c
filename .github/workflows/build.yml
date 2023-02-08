@@ -218,6 +218,7 @@ jobs:
         if: steps.cache-procursus.outputs.cache-hit != 'true'
         run: |
           export PATH=${PREFIX}/bin:${PATH}
+          export TARGET_SYSROOT=${PWD}/sdk
           git clone https://github.com/ProcursusTeam/Procursus.git
           cd Procursus
           sudo make bash-package
