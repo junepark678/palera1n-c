@@ -56,7 +56,7 @@ jobs:
             gnu_triple: aarch64-apple-darwin
             os: iphoneos
             minos: 14.0
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     env:
       MBEDTLS_VERSION: 3.3.0
       LIBUSB_VERSION: 1.0.26
@@ -73,11 +73,28 @@ jobs:
 
       - name: Install dependencies (packages)
         run: |
-          sudo /usr/local/bin/pip3 install jsonschema jinja2
-          brew install make autoconf automake pkg-config gnu-sed gettext
-          sudo rm -rf /usr/local/Frameworks/Python*
-          curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64
-          sudo install -m755 ldid_macosx_x86_64 /usr/local/bin/ldid
+            sudo apt-get -y update
+            sudo apt-get -y install autoconf automake bison build-essential llvm clang llvm-dev uuid-dev
+
+      - name: Install ldid and lipo
+        run: |
+          git clone https://github.com/sbingner/ldid --depth=1
+          cd ldid
+          git submodule update --init
+          ./make.sh
+          echo "LDID=$(pwd)/ldid" >> $GITHUB_ENV
+          cd ..
+          
+          git clone https://github.com/tpoechtrager/apple-libtapi.git --depth=1
+          cd apple-libtapi
+          ./build.sh  
+          sudo ./install.sh
+          cd ..
+          
+          git clone https://github.com/tpoechtrager/cctools-port.git
+          cd cctools-port/cctools
+          ./configure 
+          
 
       - name: Download dependencies (embedded binaries)
         run: |
