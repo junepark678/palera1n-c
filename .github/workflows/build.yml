@@ -109,8 +109,8 @@ jobs:
           tar -xf sdk-root.tar.xz -C macsdk
           rm sdk-root.tar.xz
           
-          echo "SDK=$(pwd)/sdk" >> $GITHUB_ENV
-          echo "MACSDK=$(pwd)/macsdk" >> $GITHUB_ENV
+          echo "SDK=$(pwd)/sdk/*" >> $GITHUB_ENV
+          echo "MACSDK=$(pwd)/macsdk/*" >> $GITHUB_ENV
           
 
       - name: cache libtapi
