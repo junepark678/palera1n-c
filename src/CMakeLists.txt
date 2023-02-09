@@ -234,16 +234,16 @@ target_include_directories(palera1n PRIVATE
 
 if(${STATIC})
     target_link_libraries(palera1n
-            ${DEP}/lib/libimobiledevice-1.0.a
-            ${DEP}/lib/libirecovery-1.0.a
-            ${DEP}/lib/usbmuxd-2.0.a
-            ${DEP}/lib/libimobiledevice-glue-1.0.a
-            ${DEP}/lib/libplist-2.0.a
-            ${DEP}/lib/libmbedtls.a
-            ${DEP}/lib/libmbedcrypto.a
-            ${DEP}/lib/libmbedx509.a
-            ${DEP}/lib/libreadline.a
-            ${DEP}/lib/libusb-1.0.a
+            libimobiledevice-1.0.a
+            libirecovery-1.0.a
+            usbmuxd-2.0.a
+            libimobiledevice-glue-1.0.a
+            libplist-2.0.a
+            libmbedtls.a
+            libmbedcrypto.a
+            libmbedx509.a
+            libreadline.a
+            libusb-1.0.a
             )
 else()
     target_link_libraries(palera1n
