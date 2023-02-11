@@ -227,17 +227,17 @@ target_include_directories(palera1n PRIVATE
         )
 
 #if(${STATIC})
-    target_link_libraries(palera1n
-            ${DEP}/lib/libimobiledevice-1.0.a
-            ${DEP}/lib/libirecovery-1.0.a
-            ${DEP}/lib/libusbmuxd-2.0.a
-            ${DEP}/lib/libimobiledevice-glue-1.0.a
-            ${DEP}/lib/libplist-2.0.a
-            ${DEP}/lib/libmbedtls.a
-            ${DEP}/lib/libmbedcrypto.a
-            ${DEP}/lib/libmbedx509.a
-            ${DEP}/lib/libreadline.a
-            )
+target_link_libraries(palera1n
+        ${DEP}/lib/libimobiledevice-1.0.a
+        ${DEP}/lib/libirecovery-1.0.a
+        ${DEP}/lib/libusbmuxd-2.0.a
+        ${DEP}/lib/libimobiledevice-glue-1.0.a
+        ${DEP}/lib/libplist-2.0.a
+        ${DEP}/lib/libmbedtls.a
+        ${DEP}/lib/libmbedcrypto.a
+        ${DEP}/lib/libmbedx509.a
+        ${DEP}/lib/libreadline.a
+        )
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 set(BUILD_SHARED_LIBS OFF)
@@ -322,10 +322,10 @@ add_compile_options(palera1n
 
 
 if(!BUILD_DATE)
-execute_process(COMMAND date OUTPUT_VARIABLE BUILD_DATE)
+    execute_process(COMMAND date OUTPUT_VARIABLE BUILD_DATE)
 endif()
 if(!BUILD_TAG)
-execute_process(COMMAND git describe --dirty --tags --abbrev=7 OUTPUT_VARIABLE BUILD_TAG)
+    execute_process(COMMAND git describe --dirty --tags --abbrev=7 OUTPUT_VARIABLE BUILD_TAG)
 endif()
 if(!BUILD_WHOAMI)
     execute_process(COMMAND whoami OUTPUT_VARIABLE BUILD_WHOAMI)

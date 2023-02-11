@@ -17,9 +17,14 @@
 
 #define LOG(loglevel, ...) p1_log(loglevel, __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define CLEAR() printf("\33[2K\r");
+#define palerain_option_case(x) (512 + x)
 #define palerain_option_version 129
 #define CMD_LEN_MAX 512
 #define OVERRIDE_MAGIC 0xd803b376
+
+#define palerain_option_case_version      palerain_option_case(0)
+#define palerain_option_case_force_revert palerain_option_case(1)
+
 #ifdef USE_LIBUSB
 #include <libusb-1.0/libusb.h>
 
@@ -140,14 +145,14 @@ typedef struct {
 typedef unsigned char niarelap_file_t[];
 
 extern unsigned int verbose;
-extern int demote;
 
 extern char* pongo_path;
-
-extern bool dfuhelper_only, pongo_exit;
 #ifdef DEV_BUILD
-extern bool use_tui, tui_started;
+extern bool tui_started;
 #endif
+
+extern checkrain_option_t host_flags;
+extern checkrain_option_p host_flags_p;
 
 extern pthread_t dfuhelper_thread, pongo_thread;
 extern int pongo_thr_running, dfuhelper_thr_running;
@@ -161,9 +166,8 @@ extern pthread_mutex_t log_mutex;
 
 extern pthread_mutex_t spin_mutex, found_pongo_mutex, ecid_dfu_wait_mutex;
 
-extern int enable_rootful, demote;
 extern int pongo_thr_running, dfuhelper_thr_running;
-extern bool ohio, pongo_full, device_has_booted;
+extern bool device_has_booted;
 extern char xargs_cmd[0x270];
 extern char checkrain_flags_cmd[0x20];
 extern char palerain_flags_cmd[0x20];
@@ -171,8 +175,6 @@ extern char kpf_flags_cmd[0x20];
 extern char dtpatch_cmd[0x20];
 extern char rootfs_cmd[512];
 extern char* ext_checkra1n;
-
-extern bool palerain_version;
 
 void thr_cleanup(void* ptr);
 void* dfuhelper(void* ptr);

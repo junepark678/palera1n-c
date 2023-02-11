@@ -33,8 +33,6 @@
 #define OVERRIDE_MAGIC 0xd803b376
 
 unsigned int verbose = 0;
-int enable_rootful = 0, demote = 0;
-bool ohio = true;
 char xargs_cmd[0x270] = "xargs ", checkrain_flags_cmd[0x20] = "deadbeef", palerain_flags_cmd[0x20] = "deadbeef";
 char kpf_flags_cmd[0x20] = "deadbeef", dtpatch_cmd[0x20] = "deadbeef", rootfs_cmd[512] = "deadbeef";
 extern char** environ;
@@ -60,6 +58,7 @@ void thr_cleanup(void* ptr) {
 
 int build_checks() {
 #if defined(__APPLE__)
+#ifndef NO_CHECKRAIN
 	struct mach_header_64* c1_header = (struct mach_header_64*)&checkra1n[0];
 	if (c1_header->magic != MH_MAGIC_64 && c1_header->magic != MH_CIGAM_64) {
 		LOG(LOG_FATAL, "Broken build: checkra1n is not a thin Mach-O");
@@ -70,23 +69,26 @@ int build_checks() {
 		return -1;
 	}
 #endif
+#endif
+#ifndef NO_KPF
 	struct mach_header_64 *kpf_hdr = (struct mach_header_64 *)checkra1n_kpf_pongo;
 	if (kpf_hdr->magic != MH_MAGIC_64 && kpf_hdr->magic != MH_CIGAM_64) {
 		LOG(LOG_FATAL, "Broken build: Invalid kernel patchfinder: Not thin 64-bit Mach-O");
 		return -1;
-	} else if (kpf_hdr->filetype != MH_KEXT_BUNDLE) {
+	} else
+	if (kpf_hdr->filetype != MH_KEXT_BUNDLE) {
 		LOG(LOG_FATAL, "Broken build: Invalid kernel patchfinder: Not a kext bundle");
 		return -1;
 	} else if (kpf_hdr->cputype != CPU_TYPE_ARM64) {
 		LOG(LOG_FATAL, "Broken build: Invalid kernel patchfinder: CPU type is not arm64");
 		return -1;
 	}
+#endif
 	return 0;
 }
 
-bool dfuhelper_only = false, pongo_exit = false, palerain_version = false;
 #ifdef DEV_BUILD
-bool use_tui = false, tui_started = false;
+bool tui_started = false;
 #endif
 
 int palera1n(int argc, char *argv[]) {
@@ -97,9 +99,9 @@ int palera1n(int argc, char *argv[]) {
 	pthread_mutex_init(&ecid_dfu_wait_mutex, NULL);
 	if ((ret = build_checks())) return ret;
 	if ((ret = optparse(argc, argv))) goto cleanup;
-	if (palerain_version) goto normal_exit;
+	if (checkrain_option_enabled(host_flags, host_option_palerain_version)) goto normal_exit;
 #ifdef DEV_BUILD
-	if (use_tui) {
+	if (checkrain_option_enabled(host_flags, host_option_tui)) {
 		ret = tui();
 		if (ret) goto cleanup;
 		else goto normal_exit;
@@ -110,10 +112,15 @@ int palera1n(int argc, char *argv[]) {
 	pthread_create(&dfuhelper_thread, NULL, dfuhelper, NULL);
 	pthread_join(dfuhelper_thread, NULL);
 	set_spin(0);
-	if (dfuhelper_only || device_has_booted)
+	if (checkrain_option_enabled(host_flags, host_option_dfuhelper_only) ||
+		checkrain_option_enabled(host_flags, host_option_reboot_device) || 
+		checkrain_option_enabled(host_flags, host_option_exit_recovery) || 
+		checkrain_option_enabled(host_flags, host_option_enter_recovery) || 
+		device_has_booted)
 		goto normal_exit;
 	if (exec_checkra1n()) goto cleanup;
-	if (pongo_exit || demote)
+
+	if (checkrain_option_enabled(host_flags, host_option_pongo_exit) || checkrain_option_enabled(host_flags, host_option_demote))
 		goto normal_exit;
 	set_spin(1);
 	sleep(2);
@@ -124,7 +131,7 @@ int palera1n(int argc, char *argv[]) {
 		sleep(1);
 	}
 normal_exit:
-	if (access("/usr/bin/curl", F_OK) == 0 && ohio) {
+	if (access("/usr/bin/curl", F_OK) == 0 && !checkrain_option_enabled(host_flags, host_option_no_ohio)) {
 		LOG(LOG_VERBOSE4, "Ohio");
 		char* ohio_argv[] = {
 			"/usr/bin/curl",
