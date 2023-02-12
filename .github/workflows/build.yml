@@ -402,61 +402,62 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Add cross-architecture and cross deps (i486)
-        if: ${{ matrix.triple == 'i486-linux-musl' }}
-        run: |
-          sudo apt-get remove -y libssl-dev libreadline-dev
-          sudo dpkg --add-architecture i486 && sudo apt-get update
-          sudo apt-get install -y pkg-config autoconf automake autopoint clang
-          sudo pip3 install jsonschema jinja2
-
-      - name: Add cross-architecture and cross deps (aarch64)
-        if: ${{ matrix.triple == 'aarch64-linux-musl' }}
-        run: |
-          sudo apt-get remove -y libssl-dev libreadline-dev
-          sudo dpkg --add-architecture arm64
-          curl -Lo musl.deb https://mirror.misakamikoto.network/ubuntu-ports/pool/universe/m/musl/musl_1.2.3-1_arm64.deb
-          sudo apt-get install -y "./musl.deb"
-          sudo apt-get install -y pkg-config autoconf automake autopoint clang
-          sudo pip3 install jsonschema jinja2
-
-      - name: Add cross-architecture and cross deps (armel)
-        if: ${{ matrix.triple == 'armel-linux-musleabi' }}
-        run: |
-          sudo apt-get remove -y libssl-dev libreadline-dev
-          sudo dpkg --add-architecture armhf 
-          curl -Lo musl.deb https://mirror.misakamikoto.network/ubuntu-ports/pool/universe/m/musl/musl_1.2.3-1_armhf.deb
-          sudo apt-get install -y "./musl.deb"
-          sudo apt-get install -y pkg-config autoconf automake autopoint clang
-          sudo pip3 install jsonschema jinja2
+#      - name: Add cross-architecture and cross deps (i486)
+#        if: ${{ matrix.triple == 'i486-linux-musl' }}
+#        run: |
+#          sudo apt-get remove -y libssl-dev libreadline-dev
+#          sudo dpkg --add-architecture i486 && sudo apt-get update
+#          sudo apt-get install -y pkg-config autoconf automake autopoint clang
+#          sudo pip3 install jsonschema jinja2
+#
+#      - name: Add cross-architecture and cross deps (aarch64)
+#        if: ${{ matrix.triple == 'aarch64-linux-musl' }}
+#        run: |
+#          sudo apt-get remove -y libssl-dev libreadline-dev
+#          sudo dpkg --add-architecture arm64
+#          curl -Lo musl.deb https://mirror.misakamikoto.network/ubuntu-ports/pool/universe/m/musl/musl_1.2.3-1_arm64.deb
+#          sudo apt-get install -y "./musl.deb"
+#          sudo apt-get install -y pkg-config autoconf automake autopoint clang
+#          sudo pip3 install jsonschema jinja2
+#
+#      - name: Add cross-architecture and cross deps (armel)
+#        if: ${{ matrix.triple == 'armel-linux-musleabi' }}
+#        run: |
+#          sudo apt-get remove -y libssl-dev libreadline-dev
+#          sudo dpkg --add-architecture armhf
+#          curl -Lo musl.deb https://mirror.misakamikoto.network/ubuntu-ports/pool/universe/m/musl/musl_1.2.3-1_armhf.deb
+#          sudo apt-get install -y "./musl.deb"
+#          sudo apt-get install -y pkg-config autoconf automake autopoint clang
+#          sudo pip3 install jsonschema jinja2
 
       - name: Install build dependencies (packages)
-        if: ${{ matrix.triple == 'x86_64-linux-musl' }}
         run: |
           sudo apt-get remove -y libssl-dev libreadline-dev
-          sudo apt-get install -y pkg-config autoconf automake autopoint clang musl
+          sudo apt-get install -y pkg-config autoconf automake autopoint clang
           sudo pip3 install jsonschema jinja2
-#
-#      - name: Download toolchain checksum
-#        run: |
-#          curl -LO https://vm.junengames.me/palera1n/musl/SHA256SUMS
-#          echo "TOOLCHAIN_CHECKSUM="$(grep ${{ matrix.triple }}.tgz SHA256SUMS | cut -d' ' -f1) >> $GITHUB_ENV
-#
-#      - name: Download toolchain (cached)
-#        id: toolchain_cache
-#        uses: actions/cache@v3
-#        with:
-#          path: ${{ matrix.triple }}-cross.tgz
-#          key: ${{ matrix.triple }}-${{ env.TOOLCHAIN_CHECKSUM }}-toolchain
-#
-#      - name: Download toolchain
-#        if: steps.toolchain_cache.outputs.cache-hit != 'true'
-#        run: |
-#          curl -LO https://vm.junengames.me/palera1n/musl/${{ matrix.triple }}.tgz
+
+      - name: Download toolchain checksum
+        run: |
+          curl -LO https://vm.junengames.me/palera1n/musl/SHA256SUMS
+          echo "TOOLCHAIN_CHECKSUM="$(grep ${{ matrix.triple }}.tgz SHA256SUMS | cut -d' ' -f1) >> $GITHUB_ENV
+
+      - name: Download toolchain (cached)
+        id: toolchain_cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ matrix.triple }}-cross.tgz
+          key: ${{ matrix.triple }}-${{ env.TOOLCHAIN_CHECKSUM }}-toolchain
+
+      - name: Download toolchain
+        if: steps.toolchain_cache.outputs.cache-hit != 'true'
+        run: |
+          curl -LO https://vm.junengames.me/palera1n/musl/${{ matrix.triple }}.tgz
 
       - name: Setup environment
         run: |
           mkdir -p sysroot/usr/local/lib
+          tar xf ${{ matrix.triple }}.tgz
+          cp -r ${{ matrix.triple }}/lib/* sysroot/usr/local/lib
           case ${{ matrix.triple }} in
             i486-linux-musl)
               echo "CHECKRA1N_NAME=linux-x86" >> $GITHUB_ENV
@@ -472,7 +473,7 @@ jobs:
               ;;
           esac
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
-          echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -L$(pwd)/sysroot/usr/local -L/usr/lib/${{ matrix.triple }} -lc -flto=full -Oz -target $(cut -d'-' -f1 <<< ${{ matrix.triple }})" >> $GITHUB_ENV
+          echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -lc -flto=full -Oz -target $(cut -d'-' -f1 <<< ${{ matrix.triple }})" >> $GITHUB_ENV
           echo "CXXFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -flto=full -Oz" >> $GITHUB_ENV
           echo "LDFLAGS=-g -Wl,--gc-sections -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
           echo "INSTALL=$(command -v install) --strip-program=${{ matrix.triple }}-strip" >> $GITHUB_ENV
