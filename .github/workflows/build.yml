@@ -460,7 +460,6 @@ jobs:
           sudo mkdir -p /var/lib/apk/db
           sudo mkdir -p /etc/apk
           sudo mkdir -p sysroot/usr/local/lib
-          sudo ./apk.static --root / update --initdb
           sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86_64 --initdb --no-cache add musl
           sudo chown -R runner sysroot
 
@@ -470,7 +469,6 @@ jobs:
           sudo mkdir -p /var/lib/apk/db
           sudo mkdir -p /etc/apk
           sudo mkdir -p sysroot/usr/local/lib
-          sudo ./apk.static --root / update --initdb
           sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch aarch64 --initdb --no-cache add musl
           sudo chown -R runner sysroot
 
@@ -480,7 +478,6 @@ jobs:
           sudo mkdir -p /var/lib/apk/db
           sudo mkdir -p /etc/apk
           sudo mkdir -p sysroot/usr/local/lib
-          sudo ./apk.static --root / update --initdb
           sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86 --initdb --no-cache add musl
           sudo chown -R runner sysroot
 
@@ -490,7 +487,6 @@ jobs:
           sudo mkdir -p /var/lib/apk/db
           sudo mkdir -p /etc/apk
           sudo mkdir -p sysroot/usr/local/lib
-          sudo ./apk.static update --initdb
           sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch armhf --initdb --no-cache add musl
           sudo chown -R runner sysroot
 
