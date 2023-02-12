@@ -457,7 +457,8 @@ jobs:
       - name: Download alpine toolchain
         if: ${{ matrix.triple != 'i486-linux-musl' || matrix.triple != 'armel-linux-musl' }}
         run: |
-          mkdir /tmp/apkroot
+          mkdir -p /tmp/apkroot/var/lib/apk
+          mkdir -p /tmp/apkroot/etc/apk
           ./sbin/apk.static --root /tmp/apkroot update
           mkdir -p sysroot/usr/local/lib
           ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main  --root /tmp/apkroot --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch $(cut -d'-' -f1 <<< ${{ matrix.triple }}) --initdb --no-cache add musl
@@ -465,14 +466,20 @@ jobs:
       - name: Download alpine toolchain (i486)
         if: ${{ matrix.triple == 'i486-linux-musl'}}
         run: |
+          mkdir -p /tmp/apkroot/var/lib/apk
+          mkdir -p /tmp/apkroot/etc/apk
+          ./sbin/apk.static --root /tmp/apkroot update
           mkdir -p sysroot/usr/local/lib
-          ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86 --initdb --no-cache add musl
+          ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --root /tmp/apkroot --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86 --initdb --no-cache add musl
 
       - name: Download alpine toolchain (armel)
         if: ${{ matrix.triple == 'armel-linux-musl'}}
         run: |
+          mkdir -p /tmp/apkroot/var/lib/apk
+          mkdir -p /tmp/apkroot/etc/apk
+          ./sbin/apk.static --root /tmp/apkroot update
           mkdir -p sysroot/usr/local/lib
-          ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch armhf --initdb --no-cache add musl
+          ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --root /tmp/apkroot --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch armhf --initdb --no-cache add musl
       
 
 #      - name: Set clang triple (armel)
