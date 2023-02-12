@@ -490,7 +490,7 @@ jobs:
             -DCMAKE_CROSSCOMPILING=true \
             -DCMAKE_SYSTEM_NAME=Linux \
             -DCMAKE_SYSTEM_PROCESSOR=$(echo ${{ matrix.triple }} | cut -d- -f1) \
-            -DCMAKE_C_COMPILER='${{ env.CROSS_COMPILE }}gcc' \
+            -DCMAKE_C_COMPILER='${{ env.CC }}' \
             -DCMAKE_C_FLAGS='${{ env.CFLAGS }}'  \
             -DCMAKE_CXX_FLAGS='${{ env.CXXFLAGS }}' \
             -DCMAKE_FIND_ROOT_PATH="${{ env.DESTDIR }}" \
