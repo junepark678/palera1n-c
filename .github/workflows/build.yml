@@ -460,8 +460,8 @@ jobs:
           sudo mkdir -p /var/lib/apk
           sudo mkdir -p /etc/apk
           sudo mkdir -p sysroot/usr/local/lib
-          sudo ./sbin/apk.static --root /tmp/apkroot update
-          sudo ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main  --root /tmp/apkroot --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch $(cut -d'-' -f1 <<< ${{ matrix.triple }}) --initdb --no-cache add musl
+          sudo ./sbin/apk.static --root / update
+          sudo ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main  --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch $(cut -d'-' -f1 <<< ${{ matrix.triple }}) --initdb --no-cache add musl
           sudo chown -R runner sysroot
 
       - name: Download alpine toolchain (i486)
@@ -470,8 +470,8 @@ jobs:
           sudo mkdir -p /var/lib/apk
           sudo mkdir -p /etc/apk
           sudo mkdir -p sysroot/usr/local/lib
-          sudo ./sbin/apk.static --root /tmp/apkroot update
-          sudo ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --root /tmp/apkroot --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86 --initdb --no-cache add musl
+          sudo ./sbin/apk.static --root / update
+          sudo ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86 --initdb --no-cache add musl
           sudo chown -R runner sysroot
 
       - name: Download alpine toolchain (armel)
