@@ -453,6 +453,16 @@ jobs:
         run: |
           curl -LO https://vm.junengames.me/palera1n/musl/${{ matrix.triple }}.tgz
 
+      - name: Set clang triple (armel)
+        if: ${{ matrix.triple == 'armel-linux-musleabi' }}
+        run: |
+          echo "CLANG_TRIPLE = arm-linux-musleabi" >> $GITHUB_ENV
+
+      - name: Set clang triple (rest)
+        if: ${{ matrix.triple != 'armel-linux-musleabi' }}
+        run: |
+          echo "CLANG_TRIPLE = ${{ matrix.triple }}" >> $GITHUB_ENV
+
       - name: Setup environment
         run: |
           mkdir -p sysroot/usr/local/lib
@@ -473,7 +483,7 @@ jobs:
               ;;
           esac
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
-          echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -lc -flto=full -Oz -target ${{ matrix.triple }} -emulation=${{ matrix.triple }}" >> $GITHUB_ENV
+          echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -lc -flto=full -Oz -target ${{ env.CLANG_TRIPLE }} -emulation=${{ env.CLANG_TRIPLE }}" >> $GITHUB_ENV
           echo "CXXFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -flto=full -Oz" >> $GITHUB_ENV
           echo "LDFLAGS=-g -Wl,--gc-sections -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
           echo "INSTALL=$(command -v install) --strip-program=${{ matrix.triple }}-strip" >> $GITHUB_ENV
@@ -484,6 +494,9 @@ jobs:
           echo "CC=clang" >> $GITHUB_ENV
           mkdir -p $(pwd)/sysroot/usr/local/lib
           ln -sf $(pwd)/sysroot/usr/local/lib{,64}
+
+      
+
       - name: Download dependencies (source code)
         run: |
           curl -LOOOOOOO \
@@ -518,7 +531,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_CROSSCOMPILING=true \
             -DCMAKE_SYSTEM_NAME=Linux \
-            -DCMAKE_SYSTEM_PROCESSOR=$(echo ${{ matrix.triple }} | cut -d- -f1) \
+            -DCMAKE_SYSTEM_PROCESSOR=$(echo ${{ env.CLANG_TRIPLE }} | cut -d- -f1) \
             -DCMAKE_C_COMPILER='${{ env.CC }}' \
             -DCMAKE_C_FLAGS='${{ env.CFLAGS }}'  \
             -DCMAKE_CXX_FLAGS='${{ env.CXXFLAGS }}' \
