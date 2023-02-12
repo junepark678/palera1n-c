@@ -457,30 +457,32 @@ jobs:
       - name: Download alpine toolchain
         if: ${{ matrix.triple == 'x86_64-linux-musl' && matrix.triple != 'aarch64-linux-musl' }}
         run: |
-          mkdir -p /tmp/apkroot/var/lib/apk/db/
-          mkdir -p /tmp/apkroot/etc/apk
-          ./sbin/apk.static --root /tmp/apkroot update
-          mkdir -p sysroot/usr/local/lib
-          ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main  --root /tmp/apkroot --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch $(cut -d'-' -f1 <<< ${{ matrix.triple }}) --initdb --no-cache add musl
+          sudo mkdir -p /var/lib/apk
+          sudo mkdir -p /etc/apk
+          sudo mkdir -p sysroot/usr/local/lib
+          sudo ./sbin/apk.static --root /tmp/apkroot update
+          sudo ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main  --root /tmp/apkroot --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch $(cut -d'-' -f1 <<< ${{ matrix.triple }}) --initdb --no-cache add musl
+          sudo chown -R runner sysroot
 
       - name: Download alpine toolchain (i486)
         if: ${{ matrix.triple == 'i486-linux-musl'}}
         run: |
-          mkdir -p /tmp/apkroot/var/lib/apk
-          mkdir -p /tmp/apkroot/etc/apk/{cache,world}
-          ./sbin/apk.static --root /tmp/apkroot update
-          mkdir -p sysroot/usr/local/lib
-          ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --root /tmp/apkroot --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86 --initdb --no-cache add musl
+          sudo mkdir -p /var/lib/apk
+          sudo mkdir -p /etc/apk
+          sudo mkdir -p sysroot/usr/local/lib
+          sudo ./sbin/apk.static --root /tmp/apkroot update
+          sudo ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --root /tmp/apkroot --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86 --initdb --no-cache add musl
+          sudo chown -R runner sysroot
 
       - name: Download alpine toolchain (armel)
         if: ${{ matrix.triple == 'armel-linux-musl'}}
         run: |
-          mkdir -p /tmp/apkroot/var/lib/apk
-          mkdir -p /tmp/apkroot/etc/apk
-          ./sbin/apk.static --root /tmp/apkroot update
-          mkdir -p sysroot/usr/local/lib
-          ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --root /tmp/apkroot --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch armhf --initdb --no-cache add musl
-      
+          sudo mkdir -p /var/lib/apk
+          sudo mkdir -p /etc/apk
+          sudo mkdir -p sysroot/usr/local/lib
+          sudo ./sbin/apk.static update
+          sudo ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch armhf --initdb --no-cache add musl
+          sudo chown -R runner sysroot
 
 #      - name: Set clang triple (armel)
 #        if: ${{ matrix.triple == 'armel-linux-musleabi' }}
