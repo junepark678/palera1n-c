@@ -404,31 +404,32 @@ jobs:
 
       - name: Install build dependencies (packages)
         run: |
+          sudo dpkg --add-architecture $(cut -d'-' -f1 <<< ${{ matrix.triple }}) && sudo apt-get update
           sudo apt-get remove -y libssl-dev libreadline-dev
-          sudo apt-get install -y pkg-config autoconf automake autopoint clang
+          sudo apt-get install -y pkg-config autoconf automake autopoint clang musl-dev:$(cut -d'-' -f1 <<< ${{ matrix.triple }})
           sudo pip3 install jsonschema jinja2
-
-      - name: Download toolchain checksum
-        run: |
-          curl -LO https://vm.junengames.me/palera1n/musl/SHA256SUMS
-          echo "TOOLCHAIN_CHECKSUM="$(grep ${{ matrix.triple }}.tgz SHA256SUMS | cut -d' ' -f1) >> $GITHUB_ENV
-
-      - name: Download toolchain (cached)
-        id: toolchain_cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ matrix.triple }}-cross.tgz
-          key: ${{ matrix.triple }}-${{ env.TOOLCHAIN_CHECKSUM }}-toolchain
-
-      - name: Download toolchain
-        if: steps.toolchain_cache.outputs.cache-hit != 'true'
-        run: |
-          curl -LO https://vm.junengames.me/palera1n/musl/${{ matrix.triple }}.tgz
+#
+#      - name: Download toolchain checksum
+#        run: |
+#          curl -LO https://vm.junengames.me/palera1n/musl/SHA256SUMS
+#          echo "TOOLCHAIN_CHECKSUM="$(grep ${{ matrix.triple }}.tgz SHA256SUMS | cut -d' ' -f1) >> $GITHUB_ENV
+#
+#      - name: Download toolchain (cached)
+#        id: toolchain_cache
+#        uses: actions/cache@v3
+#        with:
+#          path: ${{ matrix.triple }}-cross.tgz
+#          key: ${{ matrix.triple }}-${{ env.TOOLCHAIN_CHECKSUM }}-toolchain
+#
+#      - name: Download toolchain
+#        if: steps.toolchain_cache.outputs.cache-hit != 'true'
+#        run: |
+#          curl -LO https://vm.junengames.me/palera1n/musl/${{ matrix.triple }}.tgz
 
       - name: Setup environment
         run: |
           mkdir -p sysroot/usr/local/lib
-          tar -xf ${{ matrix.triple }}.tgz -C sysroot/usr/local/lib
+#          tar -xf ${{ matrix.triple }}.tgz -C sysroot/usr/local/lib
           case ${{ matrix.triple }} in
             i486-linux-musl)
               echo "CHECKRA1N_NAME=linux-x86" >> $GITHUB_ENV
@@ -444,7 +445,7 @@ jobs:
               ;;
           esac
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
-          echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -L$(pwd)/sysroot/usr/local -llib${{ matrix.triple }} -flto=full -Oz" >> $GITHUB_ENV
+          echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -L$(pwd)/sysroot/usr/local -l${{ matrix.triple }} -flto=full -Oz -target $(cut -d'-' -f1 <<< ${{ matrix.triple }})" >> $GITHUB_ENV
           echo "CXXFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -flto=full -Oz" >> $GITHUB_ENV
           echo "LDFLAGS=-g -Wl,--gc-sections -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
           echo "INSTALL=$(command -v install) --strip-program=${{ matrix.triple }}-strip" >> $GITHUB_ENV
