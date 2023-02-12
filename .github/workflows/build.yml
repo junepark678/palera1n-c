@@ -451,8 +451,8 @@ jobs:
 
       - name: Download apk-static
         run: |
-          curl -LO https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/apk-tools-static-2.12.11-r0.apk
-          tar xf apk-tools-static-${{ env.APK_VERSION }}.apk
+          curl -LO https://gitlab.alpinelinux.org/api/v4/projects/5/packages/generic/v2.12.10/x86_64/apk.static
+          chmod +x apk.static
 
       - name: Download alpine toolchain
         if: ${{ matrix.triple == 'x86_64-linux-musl' }}
@@ -460,8 +460,8 @@ jobs:
           sudo mkdir -p /var/lib/apk
           sudo mkdir -p /etc/apk
           sudo mkdir -p sysroot/usr/local/lib
-          sudo ./sbin/apk.static --root / update
-          sudo ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86_64 --initdb --no-cache add musl
+          sudo ./apk.static --root / update
+          sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86_64 --initdb --no-cache add musl
           sudo chown -R runner sysroot
 
       - name: Download alpine toolchain (aarch64)
@@ -470,8 +470,8 @@ jobs:
           sudo mkdir -p /var/lib/apk
           sudo mkdir -p /etc/apk
           sudo mkdir -p sysroot/usr/local/lib
-          sudo ./sbin/apk.static --root / update
-          sudo ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch aarch64 --initdb --no-cache add musl
+          sudo ./apk.static --root / update
+          sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch aarch64 --initdb --no-cache add musl
           sudo chown -R runner sysroot
 
       - name: Download alpine toolchain (i486)
@@ -480,8 +480,8 @@ jobs:
           sudo mkdir -p /var/lib/apk
           sudo mkdir -p /etc/apk
           sudo mkdir -p sysroot/usr/local/lib
-          sudo ./sbin/apk.static --root / update
-          sudo ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86 --initdb --no-cache add musl
+          sudo ./apk.static --root / update
+          sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86 --initdb --no-cache add musl
           sudo chown -R runner sysroot
 
       - name: Download alpine toolchain (armel)
@@ -490,8 +490,8 @@ jobs:
           sudo mkdir -p /var/lib/apk
           sudo mkdir -p /etc/apk
           sudo mkdir -p sysroot/usr/local/lib
-          sudo ./sbin/apk.static update
-          sudo ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch armhf --initdb --no-cache add musl
+          sudo ./apk.static update
+          sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch armhf --initdb --no-cache add musl
           sudo chown -R runner sysroot
 
 #      - name: Set clang triple (armel)
