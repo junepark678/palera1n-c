@@ -457,7 +457,7 @@ jobs:
       - name: Download alpine toolchain
         run: |
           mkdir -p sysroot/usr/local/lib
-          ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot add ${{ matrix.triple }}-musl
+          ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --initdb add ${{ matrix.triple }}-musl
           
 
 #      - name: Set clang triple (armel)
