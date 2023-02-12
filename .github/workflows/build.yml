@@ -455,10 +455,23 @@ jobs:
           tar xf apk-tools-static-${{ env.APK_VERSION }}.apk
 
       - name: Download alpine toolchain
+        if: ${{ matrix.triple != 'i486-linux-musl' || matrix.triple != 'armel-linux-musl' }}
         run: |
           mkdir -p sysroot/usr/local/lib
-          ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --initdb add ${{ matrix.triple }}-musl
-          
+          ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch $(cut -d'-' -f1 ${{ matrix.triple }}) --initdb add musl
+
+      - name: Download alpine toolchain (i486)
+        if: ${{ matrix.triple == 'i486-linux-musl'}}
+        run: |
+          mkdir -p sysroot/usr/local/lib
+          ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86 --initdb add musl
+
+      - name: Download alpine toolchain (armel)
+        if: ${{ matrix.triple == 'armel-linux-musl'}}
+        run: |
+          mkdir -p sysroot/usr/local/lib
+          ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch armhf --initdb add musl
+      
 
 #      - name: Set clang triple (armel)
 #        if: ${{ matrix.triple == 'armel-linux-musleabi' }}
