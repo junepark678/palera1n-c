@@ -457,7 +457,7 @@ jobs:
       - name: Download alpine toolchain
         if: ${{ matrix.triple != 'i486-linux-musl' || matrix.triple != 'armel-linux-musl' }}
         run: |
-          mkdir -p /tmp/apkroot/var/lib/apk
+          mkdir -p /tmp/apkroot/var/lib/apk/db/
           mkdir -p /tmp/apkroot/etc/apk
           ./sbin/apk.static --root /tmp/apkroot update
           mkdir -p sysroot/usr/local/lib
