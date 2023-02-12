@@ -456,12 +456,12 @@ jobs:
       - name: Set clang triple (armel)
         if: ${{ matrix.triple == 'armel-linux-musleabi' }}
         run: |
-          echo "CLANG_TRIPLE = arm-linux-musleabi" >> $GITHUB_ENV
+          echo "CLANG_TRIPLE=arm-linux-musleabi" >> $GITHUB_ENV
 
       - name: Set clang triple (rest)
         if: ${{ matrix.triple != 'armel-linux-musleabi' }}
         run: |
-          echo "CLANG_TRIPLE = ${{ matrix.triple }}" >> $GITHUB_ENV
+          echo "CLANG_TRIPLE=${{ matrix.triple }}" >> $GITHUB_ENV
 
       - name: Setup environment
         run: |
