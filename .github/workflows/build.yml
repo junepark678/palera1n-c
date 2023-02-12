@@ -460,7 +460,7 @@ jobs:
           sudo mkdir -p /var/lib/apk/db
           sudo mkdir -p /etc/apk
           sudo mkdir -p sysroot/usr/local/lib
-          sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86_64 --initdb --no-cache add musl
+          sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root sysroot --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86_64 --initdb --no-cache add musl
           sudo chown -R runner sysroot
 
       - name: Download alpine toolchain (aarch64)
@@ -469,7 +469,7 @@ jobs:
           sudo mkdir -p /var/lib/apk/db
           sudo mkdir -p /etc/apk
           sudo mkdir -p sysroot/usr/local/lib
-          sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch aarch64 --initdb --no-cache add musl
+          sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root sysroot --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch aarch64 --initdb --no-cache add musl
           sudo chown -R runner sysroot
 
       - name: Download alpine toolchain (i486)
@@ -478,7 +478,7 @@ jobs:
           sudo mkdir -p /var/lib/apk/db
           sudo mkdir -p /etc/apk
           sudo mkdir -p sysroot/usr/local/lib
-          sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86 --initdb --no-cache add musl
+          sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root sysroot --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch x86 --initdb --no-cache add musl
           sudo chown -R runner sysroot
 
       - name: Download alpine toolchain (armel)
@@ -487,7 +487,7 @@ jobs:
           sudo mkdir -p /var/lib/apk/db
           sudo mkdir -p /etc/apk
           sudo mkdir -p sysroot/usr/local/lib
-          sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root / --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch armhf --initdb --no-cache add musl
+          sudo ./apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --no-database --root sysroot --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot --arch armhf --initdb --no-cache add musl
           sudo chown -R runner sysroot
 
 #      - name: Set clang triple (armel)
@@ -517,9 +517,9 @@ jobs:
               ;;
           esac
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
-          echo "CFLAGS=--sysroot=$(pwd)/sysroot -fuse-ld=lld -g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -flto=full -Oz -arch $(cut -d'-' -f1 <<< ${{ matrix.triple }}) -Wno-error" >> $GITHUB_ENV
+          echo "CFLAGS=--sysroot=$(pwd)/sysroot -fuse-ld=lld -g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -flto=full -Oz -arch $(cut -d'-' -f1 <<< ${{ matrix.triple }}) -Wno-error -Wno-everything" >> $GITHUB_ENV
           echo "CXXFLAGS=--sysroot=$(pwd)/sysroot -fuse-ld=lld -stdlib=libc++ -g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -flto=full -Oz -Wno-error -arch $(cut -d'-' -f1 <<< ${{ matrix.triple }})" >> $GITHUB_ENV
-          echo "LDFLAGS=-g -Wl,--gc-sections -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "LDFLAGS=-g -Wl,--gc-sections -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -Wl,-object_path_lto,lto.o" >> $GITHUB_ENV
           echo "INSTALL=$(command -v install) --strip-program=${{ matrix.triple }}-strip" >> $GITHUB_ENV
           echo "DESTDIR=$(pwd)/sysroot" >> $GITHUB_ENV
           echo "PREFIX=/usr/local" >> $GITHUB_ENV
