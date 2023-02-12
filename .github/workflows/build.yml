@@ -455,7 +455,7 @@ jobs:
           tar xf apk-tools-static-${{ env.APK_VERSION }}.apk
 
       - name: Download alpine toolchain
-        if: ${{ matrix.triple == 'x86_64-linux-musl' && matrix.triple != 'aarch64-linux-musl' }}
+        if: ${{ !matrix.triple == 'x86_64-linux-musl' && !matrix.triple == 'aarch64-linux-musl' }}
         run: |
           sudo mkdir -p /var/lib/apk
           sudo mkdir -p /etc/apk
@@ -496,9 +496,6 @@ jobs:
 
       - name: Setup environment
         run: |
-          mkdir -p sysroot/usr/local/lib
-          tar xf ${{ matrix.triple }}.tgz
-          cp -r ${{ matrix.triple }}/lib/* sysroot/usr/local/lib
           case ${{ matrix.triple }} in
             i486-linux-musl)
               echo "CHECKRA1N_NAME=linux-x86" >> $GITHUB_ENV
