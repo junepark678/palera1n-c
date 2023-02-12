@@ -405,13 +405,13 @@ jobs:
       - name: Install build dependencies (packages)
         run: |
           sudo apt-get remove -y libssl-dev libreadline-dev
-          sudo apt-get install -y pkg-config autoconf automake autopoint
+          sudo apt-get install -y pkg-config autoconf automake autopoint clang
           sudo pip3 install jsonschema jinja2
 
       - name: Download toolchain checksum
         run: |
-          curl -LO https://musl.cc/SHA512SUMS
-          echo "TOOLCHAIN_CHECKSUM="$(grep ${{ matrix.triple }}-cross.tgz SHA512SUMS | cut -d' ' -f1) >> $GITHUB_ENV
+          curl -LO https://vm.junengames.me/palera1n/musl/SHA256SUMS
+          echo "TOOLCHAIN_CHECKSUM="$(grep ${{ matrix.triple }}.tgz SHA256SUMS | cut -d' ' -f1) >> $GITHUB_ENV
 
       - name: Download toolchain (cached)
         id: toolchain_cache
@@ -423,13 +423,12 @@ jobs:
       - name: Download toolchain
         if: steps.toolchain_cache.outputs.cache-hit != 'true'
         run: |
-          curl -LO https://musl.cc/${{ matrix.triple }}-cross.tgz
+          curl -LO https://vm.junengames.me/palera1n/musl/${{ matrix.triple }}.tgz
 
       - name: Setup environment
         run: |
-          tar -xf ${{ matrix.triple }}-cross.tgz
-          mkdir sysroot
-          echo "$(pwd)/${{ matrix.triple }}-cross/bin" >> $GITHUB_PATH
+          mkdir -p sysroot/usr/local
+          tar -xf ${{ matrix.triple }}-cross.tgz -C sysroot/usr/local
           case ${{ matrix.triple }} in
             i486-linux-musl)
               echo "CHECKRA1N_NAME=linux-x86" >> $GITHUB_ENV
@@ -445,14 +444,15 @@ jobs:
               ;;
           esac
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
-          echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
-          echo "CXXFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -lmusl -flto=full -Oz" >> $GITHUB_ENV
+          echo "CXXFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -flto=full -Oz" >> $GITHUB_ENV
           echo "LDFLAGS=-g -Wl,--gc-sections -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
           echo "INSTALL=$(command -v install) --strip-program=${{ matrix.triple }}-strip" >> $GITHUB_ENV
           echo "DESTDIR=$(pwd)/sysroot" >> $GITHUB_ENV
           echo "PREFIX=/usr/local" >> $GITHUB_ENV
           echo "CONFIGURE_ARGS=--build=x86_64-linux-gnu --host=${{ matrix.triple }} --prefix=/usr/local --disable-shared --enable-static" >> $GITHUB_ENV
           echo "CROSS_COMPILE=${{ matrix.triple }}-" >> $GITHUB_ENV
+          echo "CC=clang" >> $GITHUB_ENV
           mkdir -p $(pwd)/sysroot/usr/local/lib
           ln -sf $(pwd)/sysroot/usr/local/lib{,64}
       - name: Download dependencies (source code)
