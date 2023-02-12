@@ -455,7 +455,7 @@ jobs:
           tar xf apk-tools-static-${{ env.APK_VERSION }}.apk
 
       - name: Download alpine toolchain
-        if: ${{ matrix.triple != 'i486-linux-musl' || matrix.triple != 'armel-linux-musl' }}
+        if: ${{ matrix.triple == 'x86_64-linux-musl' && matrix.triple != 'aarch64-linux-musl' }}
         run: |
           mkdir -p /tmp/apkroot/var/lib/apk/db/
           mkdir -p /tmp/apkroot/etc/apk
