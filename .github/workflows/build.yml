@@ -436,32 +436,38 @@ jobs:
           sudo apt-get install -y pkg-config autoconf automake autopoint clang
           sudo pip3 install jsonschema jinja2
 
-      - name: Download toolchain checksum
-        run: |
-          curl -LO https://vm.junengames.me/palera1n/musl/SHA256SUMS
-          echo "TOOLCHAIN_CHECKSUM="$(grep ${{ matrix.triple }}.tgz SHA256SUMS | cut -d' ' -f1) >> $GITHUB_ENV
+#      - name: Download toolchain checksum
+#        run: |
+#          curl -LO https://vm.junengames.me/palera1n/musl/SHA256SUMS
+#          echo "TOOLCHAIN_CHECKSUM="$(grep ${{ matrix.triple }}.tgz SHA256SUMS | cut -d' ' -f1) >> $GITHUB_ENV
 
-      - name: Download toolchain (cached)
-        id: toolchain_cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ matrix.triple }}-cross.tgz
-          key: ${{ matrix.triple }}-${{ env.TOOLCHAIN_CHECKSUM }}-toolchain
+#      - name: Download toolchain (cached)
+#        id: toolchain_cache
+#        uses: actions/cache@v3
+#        with:
+#          path: ${{ matrix.triple }}-cross.tgz
+#          key: ${{ matrix.triple }}-${{ env.TOOLCHAIN_CHECKSUM }}-toolchain
 
-      - name: Download toolchain
-        if: steps.toolchain_cache.outputs.cache-hit != 'true'
+      - name: Download apk-static
         run: |
-          curl -LO https://vm.junengames.me/palera1n/musl/${{ matrix.triple }}.tgz
+          curl -LO wget https://dl-cdn.alpinelinux.org/alpine/v3.14/main/x86_64/apk-tools-static-2.10.5-r2.apk
+          tar xf apk-tools-static-2.10.5-r2.apk
 
-      - name: Set clang triple (armel)
-        if: ${{ matrix.triple == 'armel-linux-musleabi' }}
+      - name: Download alpine toolchain
         run: |
-          echo "CLANG_TRIPLE=arm-linux-musleabi" >> $GITHUB_ENV
+          mkdir -p sysroot/usr/local/lib
+          ./sbin/apk.static --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/main --repository https://dl-cdn.alpinelinux.org/alpine/v3.14/community --allow-untrusted --root sysroot add ${{ matrix.triple }}-musl
+          
 
-      - name: Set clang triple (rest)
-        if: ${{ matrix.triple != 'armel-linux-musleabi' }}
-        run: |
-          echo "CLANG_TRIPLE=${{ matrix.triple }}" >> $GITHUB_ENV
+#      - name: Set clang triple (armel)
+#        if: ${{ matrix.triple == 'armel-linux-musleabi' }}
+#        run: |
+#          echo "CLANG_TRIPLE=arm-linux-musleabi" >> $GITHUB_ENV
+#
+#      - name: Set clang triple (rest)
+#        if: ${{ matrix.triple != 'armel-linux-musleabi' }}
+#        run: |
+#          echo "CLANG_TRIPLE=${{ matrix.triple }}" >> $GITHUB_ENV
 
       - name: Setup environment
         run: |
@@ -483,8 +489,8 @@ jobs:
               ;;
           esac
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
-          echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -lc -flto=full -Oz -arch $(cut -d'-' -f1 <<< ${{ matrix.triple }}) -Wno-error" >> $GITHUB_ENV
-          echo "CXXFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -flto=full -Oz -Wno-error -arch $(cut -d'-' -f1 <<< ${{ matrix.triple }})" >> $GITHUB_ENV
+          echo "CFLAGS=--sysroot=$(pwd)/sysroot -fuse-ld=lld -g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -lc -flto=full -Oz -arch $(cut -d'-' -f1 <<< ${{ matrix.triple }}) -Wno-error" >> $GITHUB_ENV
+          echo "CXXFLAGS=--sysroot=$(pwd)/sysroot -fuse-ld=lld -stdlib=libc++ -g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -flto=full -Oz -Wno-error -arch $(cut -d'-' -f1 <<< ${{ matrix.triple }})" >> $GITHUB_ENV
           echo "LDFLAGS=-g -Wl,--gc-sections -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
           echo "INSTALL=$(command -v install) --strip-program=${{ matrix.triple }}-strip" >> $GITHUB_ENV
           echo "DESTDIR=$(pwd)/sysroot" >> $GITHUB_ENV
