@@ -395,6 +395,7 @@ jobs:
       NEWT_VERSION: 0.52.23
       GPM_VERSION: 1.20.7
       POPT_VERSION: 1.19
+      APK_VERSION: 2.12.7-r0
 
     steps:
       - name: Checkout
@@ -450,8 +451,8 @@ jobs:
 
       - name: Download apk-static
         run: |
-          curl -LO https://dl-cdn.alpinelinux.org/alpine/v3.14/main/x86_64/apk-tools-static-2.12.7-r0.apk
-          tar xf apk-tools-static-2.10.5-r2.apk
+          curl -LO https://dl-cdn.alpinelinux.org/alpine/v3.14/main/x86_64/apk-tools-static-${{ env.APK_VERSION }}.apk
+          tar xf apk-tools-static-${{ env.APK_VERSION }}.apk
 
       - name: Download alpine toolchain
         run: |
