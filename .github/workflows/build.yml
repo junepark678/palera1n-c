@@ -429,7 +429,6 @@ jobs:
       - name: Setup environment
         run: |
           mkdir -p sysroot/usr/local/lib
-#          tar -xf ${{ matrix.triple }}.tgz -C sysroot/usr/local/lib
           case ${{ matrix.triple }} in
             i486-linux-musl)
               echo "CHECKRA1N_NAME=linux-x86" >> $GITHUB_ENV
