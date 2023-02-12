@@ -485,7 +485,7 @@ jobs:
           sudo chown -R runner sysroot
 
       - name: Download alpine toolchain (armel)
-        if: ${{ matrix.triple == 'armel-linux-musl'}}
+        if: ${{ matrix.triple == 'armel-linux-musleabi'}}
         run: |
           sudo mkdir -p /var/lib/apk/db
           sudo mkdir -p /etc/apk
