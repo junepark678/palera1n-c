@@ -451,7 +451,7 @@ jobs:
 
       - name: Download apk-static
         run: |
-          curl -LO https://dl-cdn.alpinelinux.org/alpine/v3.14/main/x86_64/apk-tools-static-${{ env.APK_VERSION }}.apk
+          curl -LO https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/apk-tools-static-2.12.11-r0.apk
           tar xf apk-tools-static-${{ env.APK_VERSION }}.apk
 
       - name: Download alpine toolchain
