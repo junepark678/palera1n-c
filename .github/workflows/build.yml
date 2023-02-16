@@ -84,7 +84,7 @@ jobs:
       - name: Download dependencies (embedded binaries)
         run: |
           curl -LO https://vm.junengames.me/palera1n/sdks/{{ matrix.os }}-{{ matrix.gnu_triple }}.sdk.tar.xz
-          tar -xf {{ matrix.os }}-{{ matrix.gnu_triple }}.sdk.tar.xz -C sdk
+          tar -xf ${{ matrix.os }}-${{ matrix.gnu_triple }}.sdk.tar.xz -C sdk
           echo "SDK=$(pwd)/sdk" >> $GITHUB_ENV
 
       - name: Download dependencies (source code)
