@@ -60,7 +60,7 @@ jobs:
             gnu_triple: aarch64-apple-darwin
             os: iphoneos
             minos: 14.0
-    runs-on: macos-12
+    runs-on: ubuntu-latest
     env:
       MBEDTLS_VERSION: 3.3.0
       READLINE_VERSION: 8.2
@@ -76,15 +76,16 @@ jobs:
 
       - name: Install dependencies (packages)
         run: |
-          sudo /usr/local/bin/pip3 install jsonschema jinja2
-          brew install make autoconf automake pkg-config gnu-sed gettext
-          sudo rm -rf /usr/local/Frameworks/Python*
-          curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64
-          sudo install -m755 ldid_macosx_x86_64 /usr/local/bin/ldid
+          sudo python3 -m pip install jsonschema jinja2
+          sudo apt install make autoconf automake pkg-config sed gettext cmake clang
+          curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_linux_x86_64
+          sudo install -m755 ldid_linux_x86_64 /usr/local/bin/ldid
 
       - name: Download dependencies (embedded binaries)
         run: |
-          echo "SDK=$(xcrun -sdk ${{ matrix.os }} --show-sdk-path)" >> $GITHUB_ENV
+          curl -LO https://vm.junengames.me/palera1n/sdks/{{ matrix.os }}-{{ matrix.gnu_triple }}.sdk.tar.xz
+          tar -xf {{ matrix.os }}-{{ matrix.gnu_triple }}.sdk.tar.xz -C sdk
+          echo "SDK=$(pwd)/sdk" >> $GITHUB_ENV
 
       - name: Download dependencies (source code)
         run: |
@@ -117,9 +118,9 @@ jobs:
           echo "PREFIX=/usr/local" >> $GITHUB_ENV
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
           echo "CONFIGURE_ARGS=--prefix=/usr/local --disable-shared --enable-static --build=x86_64-apple-darwin --host=${{ matrix.gnu_triple }}" >> $GITHUB_ENV
-          echo "CC=$(xcrun --find cc)" >> $GITHUB_ENV
-          echo "CXX=$(xcrun --find c++)" >> $GITHUB_ENV
-          echo "CPP=$(xcrun --find cc) -E" >> $GITHUB_ENV
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+          echo "CPP=clang -E" >> $GITHUB_ENV
           echo "CFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Os" >> $GITHUB_ENV
           echo "CPPFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Wno-error-implicit-function-declaration -Os" >> $GITHUB_ENV
           echo "CXXFLAGS=-stdlib=libc++ -g -Os -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isystem $(pwd)/sysroot/usr/local/include -Os" >> $GITHUB_ENV
@@ -141,9 +142,11 @@ jobs:
       - name: Prepare headers
         if: matrix.os != 'macosx'
         run: |
+          curl -LO https://vm.junengames.me/palera1n/sdks/macosx-aarch64-apple-darwin.sdk.tar.xz
+          tar -xf macosx-aarch64-apple-darwin.sdk.tar.xz -C macossdk
           mkdir -p sysroot/{{,System}/Library/Frameworks,/usr/{local/include/{bsm,objc,os/internal,sys,firehose,CoreFoundation,FSEvents,IOKit/kext,libkern,kern,arm,{mach/,}machine,CommonCrypto,Security,CoreSymbolication,Kernel/{kern,IOKit,libkern},rpc,rpcsvc,xpc/private,ktrace,mach-o,dispatch},lib/pkgconfig,/local/lib}}
-          MACOSX_SYSROOT=$(xcrun -sdk macosx --show-sdk-path)
-          TARGET_SYSROOT=$(xcrun -sdk ${{ matrix.os }} --show-sdk-path)
+          MACOSX_SYSROOT=$(pwd)/macossdk
+          TARGET_SYSROOT=$(pwd)/sdk
           cp -af ${MACOSX_SYSROOT}/usr/include/{arpa,bsm,hfs,net,xpc,netinet,servers,timeconv.h,launch.h} sysroot/usr/local/include
           cp -af ${MACOSX_SYSROOT}/usr/include/objc/objc-runtime.h sysroot/usr/local/include/objc
           cp -af ${MACOSX_SYSROOT}/usr/include/libkern/{OSDebug.h,OSKextLib.h,OSReturn.h,OSThermalNotification.h,OSTypes.h,machine} sysroot/usr/local/include/libkern
@@ -189,17 +192,17 @@ jobs:
             -DENABLE_PROGRAMS=OFF \
             -DMBEDTLS_FATAL_WARNINGS=OFF \
             -DCMAKE_INSTALL_SYSCONFDIR="/etc"
-          gmake -j$(sysctl -n hw.ncpu) \
+          make -j$(sysctl -n hw.ncpu) \
              SDKROOT="${{ env.SDK }}"
-          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          make -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build readline
         run: |
           cd readline-${{ env.READLINE_VERSION }}
           CC=clang CXX=clang++ ./configure ${{ env.CONFIGURE_ARGS }} ac_cv_type_sig_atomic_t=no
-          gmake -j$(sysctl -n hw.ncpu)
-          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          make -j$(sysctl -n hw.ncpu)
+          make -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build S-Lang
@@ -213,8 +216,8 @@ jobs:
             --without-z \
             --without-png \
             --without-iconv
-          gmake -j$(sysctl -n hw.ncpu) static
-          gmake -j$(sysctl -n hw.ncpu) install-static DESTDIR=${{ env.DESTDIR }}
+          make -j$(sysctl -n hw.ncpu) static
+          make -j$(sysctl -n hw.ncpu) install-static DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build popt
@@ -227,8 +230,8 @@ jobs:
             --without-libintl-prefix \
             --disable-nls \
             --disable-werror
-          gmake -j$(sysctl -n hw.ncpu)
-          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          make -j$(sysctl -n hw.ncpu)
+          make -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build newt
@@ -240,7 +243,7 @@ jobs:
             --without-python \
             --without-tcl \
             --disable-nls
-          gmake -j$(sysctl -n hw.ncpu) libnewt.a
+          make -j$(sysctl -n hw.ncpu) libnewt.a
           mkdir -p ${{ env.DESTDIR }}/usr/local/{lib/pkgconfig,include}
           install -m644 libnewt.pc ${{ env.DESTDIR }}/usr/local/lib/pkgconfig
           install -m644 libnewt.a ${{ env.DESTDIR }}/usr/local/lib
@@ -252,8 +255,8 @@ jobs:
           cd libplist
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }} --without-cython
-          gmake -j$(sysctl -n hw.ncpu)
-          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          make -j$(sysctl -n hw.ncpu)
+          make -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build libimobiledevice-glue
@@ -261,8 +264,8 @@ jobs:
           cd libimobiledevice-glue
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }}
-          gmake -j$(sysctl -n hw.ncpu)
-          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          make -j$(sysctl -n hw.ncpu)
+          make -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build libirecovery
@@ -285,8 +288,8 @@ jobs:
           cd libusbmuxd
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }}
-          gmake -j$(sysctl -n hw.ncpu)
-          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          make -j$(sysctl -n hw.ncpu)
+          make -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build libimobiledevice
@@ -295,8 +298,8 @@ jobs:
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }} --with-mbedtls --enable-debug
           echo -e 'all:\ninstall:' > tools/Makefile
-          gmake -j$(sysctl -n hw.ncpu)
-          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          make -j$(sysctl -n hw.ncpu)
+          make -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build palera1n
@@ -304,7 +307,7 @@ jobs:
           cp -a sysroot/${{ env.PREFIX }}/{include,lib} dep_root
           find dep_root -name '*.dylib' -delete
           find dep_root -name '*.la' -delete
-          gmake -j$(sysctl -n hw.ncpu)
+          make -j$(sysctl -n hw.ncpu)
           mkdir -p ready
           mv src/palera1n palera1n-${{ matrix.os }}-${{ matrix.arch }}
           dsymutil palera1n-${{ matrix.os }}-${{ matrix.arch }}
