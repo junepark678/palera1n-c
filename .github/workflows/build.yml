@@ -140,6 +140,7 @@ jobs:
       - name: Prepare headers
         if: matrix.os != 'macosx'
         run: |
+          mkdir macossdk
           curl -LO https://vm.junengames.me/palera1n/sdks/macosx-aarch64-apple-darwin.sdk.tar.xz
           tar -xf macosx-aarch64-apple-darwin.sdk.tar.xz -C macossdk
           mkdir -p sysroot/{{,System}/Library/Frameworks,/usr/{local/include/{bsm,objc,os/internal,sys,firehose,CoreFoundation,FSEvents,IOKit/kext,libkern,kern,arm,{mach/,}machine,CommonCrypto,Security,CoreSymbolication,Kernel/{kern,IOKit,libkern},rpc,rpcsvc,xpc/private,ktrace,mach-o,dispatch},lib/pkgconfig,/local/lib}}
